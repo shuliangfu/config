@@ -16,6 +16,17 @@
  * - 客户端：✅ 支持（浏览器环境）
  */
 
+/**
+ * Storage 事件接口（用于跨标签页同步）
+ */
+interface StorageEvent {
+  /** 存储键名 */
+  key: string | null;
+  /** 新值 */
+  newValue: string | null;
+  /** 旧值 */
+  oldValue: string | null;
+}
 
 /**
  * 客户端配置管理器选项
@@ -126,7 +137,7 @@ export class ConfigManager {
   private cacheKey: string;
   private cacheExpiry: number = 0;
   private pollTimer: number | null = null;
-  private storageListener: ((e: StorageEvent) => void) | null = null;
+  private storageListener: ((e: Event) => void) | null = null;
 
   constructor(options: ConfigManagerOptions = {}) {
     this.options = {
@@ -266,8 +277,9 @@ export class ConfigManager {
    */
   private startListening(): void {
     // 监听 storage 事件（跨标签页同步）
-    this.storageListener = (e: StorageEvent) => {
-      if (e.key === this.options.storageKey) {
+    this.storageListener = (e: Event) => {
+      const storageEvent = e as unknown as StorageEvent;
+      if (storageEvent.key === this.options.storageKey) {
         const newConfig = this.loadStorageConfig();
         this.config = deepMerge(this.config, newConfig);
         if (this.options.onUpdate) {
