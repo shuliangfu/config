@@ -1,26 +1,9 @@
 # @dreamer/config
 
-> 一个用于 Deno 和 Bun 的配置管理库，提供统一的配置接口，支持服务端配置文件管理
+> 一个兼容 Deno 和 Bun 的配置管理库，提供统一的配置接口，支持服务端配置文件管理
 
 [![JSR](https://jsr.io/badges/@dreamer/config)](https://jsr.io/@dreamer/config)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
----
-
-## 📋 目录
-
-- [功能](#-功能)
-- [特性](#-特性)
-- [设计原则](#-设计原则)
-- [使用场景](#-使用场景)
-- [安装](#-安装)
-- [环境兼容性](#-环境兼容性)
-- [快速开始](#-快速开始)
-- [API 文档](#-api-文档)
-- [客户端支持](#-客户端支持)
-- [备注](#-备注)
-- [贡献](#-贡献)
-- [许可证](#-许可证)
 
 ---
 

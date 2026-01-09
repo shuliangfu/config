@@ -1,6 +1,11 @@
 # @dreamer/config/client
 
-一个用于浏览器的配置管理库，提供统一的配置接口，支持浏览器存储配置、环境变量配置和 API 配置。
+> 一个用于浏览器的配置管理库，提供统一的配置接口，支持浏览器存储配置、环境变量配置和 API 配置
+
+[![JSR](https://jsr.io/badges/@dreamer/config/client)](https://jsr.io/@dreamer/config/client)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
 
 ## 服务端支持
 
@@ -55,7 +60,7 @@ deno add jsr:@dreamer/config/client
 - **环境**：✅ 支持（浏览器环境）
 - **依赖**：无外部依赖
 
-## 使用示例
+## 🚀 快速开始
 
 ### 基础用法（浏览器存储）
 
@@ -185,48 +190,6 @@ config.on("change:app.theme", (newValue, oldValue) => {
 });
 ```
 
-### 完整示例
-
-```typescript
-import { createConfig } from "jsr:@dreamer/config/client";
-
-// 创建客户端配置管理器
-const config = createConfig({
-  // 多源配置合并
-  storage: "localStorage",
-  storageKey: "app_config",
-  env: import.meta.env,
-  envPrefix: "VITE_",
-  apiUrl: "/api/config",
-  cache: true,
-  cacheTTL: 3600000,
-});
-
-// 加载配置
-await config.load();
-
-// 使用配置
-const appConfig = {
-  name: config.get("app.name"),
-  version: config.get("app.version"),
-  theme: config.get("app.theme", "light"), // 默认值
-  apiUrl: config.get("api.url"),
-  features: config.get("features", {}),
-};
-
-// 更新配置（会自动保存到 localStorage）
-config.set("app.theme", "dark");
-await config.save();
-
-// 监听配置变化
-config.on("update", (newConfig) => {
-  console.log("配置已更新:", newConfig);
-});
-
-// 从 API 刷新配置
-await config.refresh();
-```
-
 ### 配置验证
 
 ```typescript
@@ -264,8 +227,30 @@ try {
 - **用户配置管理**：用户偏好、个人设置
 - **动态配置**：从服务器获取最新配置
 
-## 备注
+---
+
+## 📝 备注
 
 - **统一接口**：与服务端使用相似的 API 接口，降低学习成本
 - **类型安全**：完整的 TypeScript 类型支持
 - **无外部依赖**：纯 TypeScript 实现
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE.md](../../../LICENSE.md)
+
+---
+
+<div align="center">
+
+**Made with ❤️ by Dreamer Team**
+
+</div>
