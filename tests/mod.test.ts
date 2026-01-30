@@ -11,8 +11,9 @@ import {
   remove,
   writeTextFile,
 } from "@dreamer/runtime-adapter";
+import { ServiceContainer } from "@dreamer/service";
 import { afterAll, beforeAll, describe, expect, it } from "@dreamer/test";
-import { ConfigManager } from "../src/mod.ts";
+import { ConfigManager, createConfigManager } from "../src/mod.ts";
 
 describe("ConfigManager", () => {
   const testDir = join(cwd(), "tests", "data", "test-config");
@@ -569,6 +570,131 @@ describe("ConfigManager", () => {
       manager.set("a.b.c.d.e", "deep");
       expect(manager.get("a.b.c.d.e")).toBe("deep");
       expect(manager.has("a.b.c.d.e")).toBe(true);
+    });
+  });
+
+  describe("ConfigManager ServiceContainer 集成", () => {
+    it("应该获取默认管理器名称", () => {
+      const manager = new ConfigManager({
+        hotReload: false,
+      });
+
+      expect(manager.getName()).toBe("default");
+    });
+
+    it("应该获取自定义管理器名称", () => {
+      const manager = new ConfigManager({
+        name: "custom",
+        hotReload: false,
+      });
+
+      expect(manager.getName()).toBe("custom");
+    });
+
+    it("应该设置和获取服务容器", () => {
+      const manager = new ConfigManager({
+        hotReload: false,
+      });
+      const container = new ServiceContainer();
+
+      expect(manager.getContainer()).toBeUndefined();
+
+      manager.setContainer(container);
+      expect(manager.getContainer()).toBe(container);
+    });
+
+    it("应该从服务容器获取 ConfigManager", () => {
+      const container = new ServiceContainer();
+      const manager = new ConfigManager({
+        name: "test",
+        hotReload: false,
+      });
+      manager.setContainer(container);
+
+      container.registerSingleton("config:test", () => manager);
+
+      const retrieved = ConfigManager.fromContainer(container, "test");
+      expect(retrieved).toBe(manager);
+    });
+
+    it("应该在服务不存在时返回 undefined", () => {
+      const container = new ServiceContainer();
+      const retrieved = ConfigManager.fromContainer(container, "non-existent");
+      expect(retrieved).toBeUndefined();
+    });
+
+    it("应该支持多个 ConfigManager 实例", () => {
+      const container = new ServiceContainer();
+
+      const devManager = new ConfigManager({
+        name: "dev",
+        env: "dev",
+        hotReload: false,
+      });
+      devManager.setContainer(container);
+
+      const prodManager = new ConfigManager({
+        name: "prod",
+        env: "prod",
+        hotReload: false,
+      });
+      prodManager.setContainer(container);
+
+      container.registerSingleton("config:dev", () => devManager);
+      container.registerSingleton("config:prod", () => prodManager);
+
+      expect(ConfigManager.fromContainer(container, "dev")).toBe(devManager);
+      expect(ConfigManager.fromContainer(container, "prod")).toBe(prodManager);
+    });
+  });
+
+  describe("createConfigManager 工厂函数", () => {
+    it("应该创建 ConfigManager 实例", () => {
+      const manager = createConfigManager({
+        hotReload: false,
+      });
+
+      expect(manager).toBeInstanceOf(ConfigManager);
+    });
+
+    it("应该使用默认名称", () => {
+      const manager = createConfigManager({
+        hotReload: false,
+      });
+
+      expect(manager.getName()).toBe("default");
+    });
+
+    it("应该使用自定义名称", () => {
+      const manager = createConfigManager({
+        name: "custom",
+        hotReload: false,
+      });
+
+      expect(manager.getName()).toBe("custom");
+    });
+
+    it("应该能够在服务容器中注册", () => {
+      const container = new ServiceContainer();
+
+      container.registerSingleton(
+        "config:main",
+        () => createConfigManager({ name: "main", hotReload: false }),
+      );
+
+      const manager = container.get<ConfigManager>("config:main");
+      expect(manager).toBeInstanceOf(ConfigManager);
+      expect(manager.getName()).toBe("main");
+    });
+
+    it("应该支持加载和获取配置", async () => {
+      const manager = createConfigManager({
+        directories: [testDir],
+        hotReload: false,
+      });
+
+      await manager.load();
+      expect(manager.get("app.name")).toBe("test");
     });
   });
 });

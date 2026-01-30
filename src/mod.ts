@@ -27,14 +27,17 @@ import {
   stat,
   watchFs,
 } from "@dreamer/runtime-adapter";
+import type { ServiceContainer } from "@dreamer/service";
 
 /**
  * 配置管理器选项
  */
 export interface ConfigManagerOptions {
+  /** 管理器名称（用于服务容器识别） */
+  name?: string;
   /** 配置目录（可以是多个，按顺序加载，后面的覆盖前面的） */
   directories?: string[];
-  /** 环境名称（dev、test、prod），默认从环境变量获取 */
+  /** 环境（dev、test、prod） */
   env?: string;
   /** 环境变量前缀（只读取带此前缀的环境变量） */
   envPrefix?: string;
@@ -216,12 +219,24 @@ function loadEnvConfig(
  * 配置管理器（服务端）
  */
 export class ConfigManager {
-  private options: Omit<Required<ConfigManagerOptions>, "onUpdate"> & {
+  /** 配置选项 */
+  private options: Omit<Required<ConfigManagerOptions>, "onUpdate" | "name"> & {
     onUpdate?: (config: Record<string, unknown>) => void;
+    env: string;
   };
+  /** 配置数据 */
   private config: Record<string, unknown> = {};
+  /** 文件监听器列表 */
   private watchers: FileWatcher[] = [];
+  /** 服务容器实例 */
+  private container?: ServiceContainer;
+  /** 管理器名称 */
+  private readonly managerName: string;
 
+  /**
+   * 创建 ConfigManager 实例
+   * @param options 配置选项
+   */
   constructor(options: ConfigManagerOptions = {}) {
     const env = options.env || getEnv("DENO_ENV") ||
       getEnv("NODE_ENV") || "dev";
@@ -234,6 +249,45 @@ export class ConfigManager {
         : env === "dev",
       onUpdate: options.onUpdate,
     };
+    this.managerName = options.name || "default";
+  }
+
+  /**
+   * 获取管理器名称
+   * @returns 管理器名称
+   */
+  getName(): string {
+    return this.managerName;
+  }
+
+  /**
+   * 设置服务容器
+   * @param container 服务容器实例
+   */
+  setContainer(container: ServiceContainer): void {
+    this.container = container;
+  }
+
+  /**
+   * 获取服务容器
+   * @returns 服务容器实例，如果未设置则返回 undefined
+   */
+  getContainer(): ServiceContainer | undefined {
+    return this.container;
+  }
+
+  /**
+   * 从服务容器创建 ConfigManager 实例
+   * @param container 服务容器实例
+   * @param name 管理器名称（默认 "default"）
+   * @returns 关联了服务容器的 ConfigManager 实例
+   */
+  static fromContainer(
+    container: ServiceContainer,
+    name = "default",
+  ): ConfigManager | undefined {
+    const serviceName = `config:${name}`;
+    return container.tryGet<ConfigManager>(serviceName);
   }
 
   /**

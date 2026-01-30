@@ -1,9 +1,10 @@
 # @dreamer/config/client
 
-> 一个用于浏览器的配置管理库，提供统一的配置接口，支持浏览器存储配置、环境变量配置和 API 配置
+> 一个用于浏览器的配置管理库，提供统一的配置接口，支持浏览器存储配置、环境变量配置和
+> API 配置
 
 [![JSR](https://jsr.io/badges/@dreamer/config/client)](https://jsr.io/@dreamer/config/client)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE.md)
 
 ---
 
