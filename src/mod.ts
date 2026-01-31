@@ -19,10 +19,12 @@
  */
 
 import {
+  existsSync,
   type FileWatcher,
   getEnv,
   getEnvAll,
   readTextFile,
+  readTextFileSync,
   realPath,
   stat,
   watchFs,
@@ -126,7 +128,7 @@ function parseEnvFile(content: string): Record<string, string> {
 }
 
 /**
- * 加载 .env 文件
+ * 加载 .env 文件（异步版本）
  */
 async function loadEnvFile(filePath: string): Promise<Record<string, string>> {
   try {
@@ -138,13 +140,43 @@ async function loadEnvFile(filePath: string): Promise<Record<string, string>> {
 }
 
 /**
- * 加载 JSON 配置文件
+ * 加载 .env 文件（同步版本）
+ * @param filePath .env 文件路径
+ * @returns 解析后的环境变量对象
+ */
+function loadEnvFileSync(filePath: string): Record<string, string> {
+  try {
+    const content = readTextFileSync(filePath);
+    return parseEnvFile(content);
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * 加载 JSON 配置文件（异步版本）
  */
 async function loadJsonConfig(
   filePath: string,
 ): Promise<Record<string, unknown> | null> {
   try {
     const content = await readTextFile(filePath);
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 加载 JSON 配置文件（同步版本）
+ * @param filePath JSON 配置文件路径
+ * @returns 解析后的配置对象，失败返回 null
+ */
+function loadJsonConfigSync(
+  filePath: string,
+): Record<string, unknown> | null {
+  try {
+    const content = readTextFileSync(filePath);
     return JSON.parse(content);
   } catch {
     return null;
@@ -326,7 +358,76 @@ export class ConfigManager {
   }
 
   /**
-   * 加载目录配置
+   * 同步加载配置
+   *
+   * 注意：同步版本仅支持 JSON 配置文件和 .env 文件，不支持 TypeScript 模块配置。
+   * 如果需要加载 TypeScript 模块配置（mod.ts），请使用异步的 `load()` 方法。
+   *
+   * 加载优先级（从低到高）：
+   * 1. 默认 JSON 配置（config.json）
+   * 2. 环境特定 JSON 配置（config.{env}.json）
+   * 3. 默认 .env 文件
+   * 4. 环境特定 .env 文件（.env.{env}）
+   * 5. 环境变量（最高优先级）
+   *
+   * @example
+   * ```typescript
+   * const config = new ConfigManager({ directories: ["./config"] });
+   * config.loadSync();
+   * console.log(config.get("database.host"));
+   * ```
+   */
+  loadSync(): void {
+    let mergedConfig: Record<string, unknown> = {};
+
+    // 1. 按目录顺序加载 JSON 配置（后面的覆盖前面的）
+    for (const dir of this.options.directories) {
+      // 加载默认 JSON 配置
+      const defaultJsonPath = `${dir}/config.json`;
+      if (existsSync(defaultJsonPath)) {
+        const defaultConfig = loadJsonConfigSync(defaultJsonPath);
+        if (defaultConfig) {
+          mergedConfig = deepMerge(mergedConfig, defaultConfig);
+        }
+      }
+
+      // 加载环境特定 JSON 配置
+      const envJsonPath = `${dir}/config.${this.options.env}.json`;
+      if (existsSync(envJsonPath)) {
+        const envConfig = loadJsonConfigSync(envJsonPath);
+        if (envConfig) {
+          mergedConfig = deepMerge(mergedConfig, envConfig);
+        }
+      }
+    }
+
+    // 2. 加载 .env 文件
+    for (const dir of this.options.directories) {
+      // 加载默认 .env
+      const defaultEnvPath = `${dir}/.env`;
+      const defaultEnv = loadEnvFileSync(defaultEnvPath);
+      mergedConfig = deepMerge(mergedConfig, defaultEnv);
+
+      // 加载环境特定 .env
+      const envPath = `${dir}/.env.${this.options.env}`;
+      const envFileConfig = loadEnvFileSync(envPath);
+      mergedConfig = deepMerge(mergedConfig, envFileConfig);
+    }
+
+    // 3. 环境变量覆盖（最高优先级）
+    const envVars = loadEnvConfig(this.options.envPrefix);
+    mergedConfig = deepMerge(mergedConfig, envVars);
+
+    this.config = mergedConfig;
+
+    // 4. 启用热重载
+    if (this.options.hotReload) {
+      this.startWatching();
+    }
+  }
+
+  /**
+   * 加载目录配置（异步版本，支持 TypeScript 模块）
    */
   private async loadDirectoryConfig(
     directory: string,

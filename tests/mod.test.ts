@@ -62,6 +62,171 @@ describe("ConfigManager", () => {
     });
   });
 
+  describe("loadSync", () => {
+    it("应该同步加载 JSON 配置文件", () => {
+      const manager = new ConfigManager({
+        directories: [testDir],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      const config = manager.getAll();
+      expect(config.app).toBeTruthy();
+      expect((config.app as { name: string }).name).toBe("test");
+    });
+
+    it("应该同步加载环境特定的 JSON 配置", async () => {
+      const syncDir = join(testDir, "sync-env");
+      await mkdir(syncDir, { recursive: true });
+
+      await writeTextFile(
+        join(syncDir, "config.json"),
+        JSON.stringify({ app: { name: "default" } }, null, 2),
+      );
+      await writeTextFile(
+        join(syncDir, "config.prod.json"),
+        JSON.stringify({ app: { name: "prod-sync" } }, null, 2),
+      );
+
+      const manager = new ConfigManager({
+        directories: [syncDir],
+        env: "prod",
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      expect(manager.get("app.name")).toBe("prod-sync");
+    });
+
+    it("应该同步加载 .env 文件", async () => {
+      const syncEnvDir = join(testDir, "sync-env-file");
+      await mkdir(syncEnvDir, { recursive: true });
+
+      await writeTextFile(
+        join(syncEnvDir, ".env"),
+        "SYNC_APP_NAME=sync-test\nSYNC_APP_PORT=8080\n",
+      );
+
+      const manager = new ConfigManager({
+        directories: [syncEnvDir],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      const config = manager.getAll();
+      expect(config.SYNC_APP_NAME).toBe("sync-test");
+      expect(config.SYNC_APP_PORT).toBe("8080");
+    });
+
+    it("应该同步加载环境特定的 .env 文件", async () => {
+      const syncEnvSpecificDir = join(testDir, "sync-env-specific");
+      await mkdir(syncEnvSpecificDir, { recursive: true });
+
+      await writeTextFile(
+        join(syncEnvSpecificDir, ".env"),
+        "ENV_MODE=default\n",
+      );
+      await writeTextFile(
+        join(syncEnvSpecificDir, ".env.dev"),
+        "ENV_MODE=development\n",
+      );
+
+      const manager = new ConfigManager({
+        directories: [syncEnvSpecificDir],
+        env: "dev",
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      const config = manager.getAll();
+      expect(config.ENV_MODE).toBe("development");
+    });
+
+    it("应该同步合并 JSON 和 .env 配置", async () => {
+      const syncMergeDir = join(testDir, "sync-merge");
+      await mkdir(syncMergeDir, { recursive: true });
+
+      await writeTextFile(
+        join(syncMergeDir, "config.json"),
+        JSON.stringify({ app: { name: "json-app", port: 3000 } }, null, 2),
+      );
+      await writeTextFile(
+        join(syncMergeDir, ".env"),
+        "DB_HOST=localhost\nDB_PORT=5432\n",
+      );
+
+      const manager = new ConfigManager({
+        directories: [syncMergeDir],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      const config = manager.getAll();
+      // JSON 配置
+      expect((config.app as { name: string; port: number }).name).toBe(
+        "json-app",
+      );
+      expect((config.app as { name: string; port: number }).port).toBe(3000);
+      // .env 配置
+      expect(config.DB_HOST).toBe("localhost");
+      expect(config.DB_PORT).toBe("5432");
+    });
+
+    it("应该同步处理多个目录的配置合并", async () => {
+      const syncDir1 = join(testDir, "sync-dir1");
+      const syncDir2 = join(testDir, "sync-dir2");
+      await mkdir(syncDir1, { recursive: true });
+      await mkdir(syncDir2, { recursive: true });
+
+      await writeTextFile(
+        join(syncDir1, "config.json"),
+        JSON.stringify({ app: { name: "dir1", version: "1.0.0" } }, null, 2),
+      );
+      await writeTextFile(
+        join(syncDir2, "config.json"),
+        JSON.stringify({ app: { name: "dir2" } }, null, 2),
+      );
+
+      const manager = new ConfigManager({
+        directories: [syncDir1, syncDir2],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      // dir2 应该覆盖 dir1 的 name
+      expect(manager.get("app.name")).toBe("dir2");
+      // dir1 的 version 应该保留
+      expect(manager.get("app.version")).toBe("1.0.0");
+    });
+
+    it("应该同步处理不存在的目录", () => {
+      const manager = new ConfigManager({
+        directories: [join(testDir, "sync-nonexistent")],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      // 不应该抛出错误，配置应该为空对象
+      const config = manager.getAll();
+      expect(config).toBeTruthy();
+      expect(typeof config).toBe("object");
+    });
+
+    it("应该同步处理不存在的配置文件", async () => {
+      const syncEmptyDir = join(testDir, "sync-empty");
+      await mkdir(syncEmptyDir, { recursive: true });
+
+      const manager = new ConfigManager({
+        directories: [syncEmptyDir],
+        hotReload: false,
+      });
+      manager.loadSync();
+
+      const config = manager.getAll();
+      expect(config).toBeTruthy();
+    });
+  });
+
   describe("get", () => {
     it("应该获取配置值", async () => {
       const manager = new ConfigManager({

@@ -4,7 +4,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/config)](https://jsr.io/@dreamer/config)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Tests: 39 passed](https://img.shields.io/badge/Tests-39%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests: 47 passed](https://img.shields.io/badge/Tests-47%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -22,6 +22,7 @@
 | 🌍 **多环境配置**   | 支持开发环境（dev）、测试环境（test）、生产环境（prod）、环境自动检测、环境特定配置文件            |
 | 📁 **多目录支持**   | 支持配置多个配置目录、按目录顺序加载配置、优先级控制                                               |
 | 📝 **配置文件加载** | TypeScript 模块导出（推荐，类型安全）、JSON 配置文件（纯数据配置）、.env 文件支持                  |
+| ⚡ **同步/异步加载** | 异步 `load()` 支持完整功能，同步 `loadSync()` 支持 JSON 和 .env 文件快速加载                       |
 | 🔀 **配置合并**     | 多目录配置合并、默认配置 + 环境配置合并、深度合并、数组替换、环境变量覆盖配置值                    |
 | ✅ **配置验证**     | 配置结构验证（Schema 验证）、必填字段检查、类型验证、自定义验证规则、验证错误提示                  |
 | 🔐 **环境变量支持** | 自动读取环境变量、环境变量覆盖配置文件值、支持环境变量映射、支持环境变量前缀过滤                   |
@@ -111,6 +112,9 @@ const config = createConfig({
   env: "dev",
 });
 
+// 异步加载配置（支持 TypeScript 模块、JSON、.env）
+await config.load();
+
 // 获取配置
 const dbHost = config.get("database.host");
 const dbPort = config.get("database.port");
@@ -120,6 +124,29 @@ const apiKey = config.get("api.key");
 const dbConfig = config.get("database");
 // { host: "localhost", port: 5432, name: "mydb" }
 ```
+
+### 同步加载配置
+
+如果只使用 JSON 和 .env 文件，可以使用同步加载方式：
+
+```typescript
+import { ConfigManager } from "jsr:@dreamer/config";
+
+const config = new ConfigManager({
+  directories: ["./config"],
+  env: "dev",
+  hotReload: false,
+});
+
+// 同步加载配置（仅支持 JSON 和 .env 文件，不支持 TypeScript 模块）
+config.loadSync();
+
+// 立即使用配置
+const dbHost = config.get("database.host");
+console.log(`数据库地址: ${dbHost}`);
+```
+
+> **注意**：`loadSync()` 不支持 TypeScript 模块配置（`mod.ts`），因为动态导入（`import()`）是异步操作。如果需要使用 TypeScript 模块配置，请使用异步的 `load()` 方法。
 
 ### 配置文件结构
 
@@ -253,19 +280,20 @@ container.registerSingleton("databaseService", () => {
 
 **方法**：
 
-| 方法                                     | 说明                                             |
-| ---------------------------------------- | ------------------------------------------------ |
-| `get(key, defaultValue?)`                | 获取配置值（支持点号路径，如 `"database.host"`） |
-| `set(key, value)`                        | 设置配置值                                       |
-| `has(key)`                               | 检查配置键是否存在                               |
-| `getAll()`                               | 获取所有配置                                     |
-| `getEnv()`                               | 获取当前环境                                     |
-| `load()`                                 | 加载配置文件                                     |
-| `stopWatching()`                         | 停止文件监听                                     |
-| `getName()`                              | 获取管理器名称                                   |
-| `setContainer(container)`                | 设置服务容器                                     |
-| `getContainer()`                         | 获取服务容器                                     |
-| `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                |
+| 方法                                     | 说明                                                       |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| `get(key, defaultValue?)`                | 获取配置值（支持点号路径，如 `"database.host"`）           |
+| `set(key, value)`                        | 设置配置值                                                 |
+| `has(key)`                               | 检查配置键是否存在                                         |
+| `getAll()`                               | 获取所有配置                                               |
+| `getEnv()`                               | 获取当前环境                                               |
+| `load()`                                 | 异步加载配置文件（支持 TypeScript 模块、JSON、.env）       |
+| `loadSync()`                             | 同步加载配置文件（仅支持 JSON 和 .env，不支持 TS 模块）    |
+| `stopWatching()`                         | 停止文件监听                                               |
+| `getName()`                              | 获取管理器名称                                             |
+| `setContainer(container)`                | 设置服务容器                                               |
+| `getContainer()`                         | 获取服务容器                                               |
+| `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                          |
 
 ### ServiceContainer 集成示例
 
@@ -305,11 +333,12 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 
 ## 📊 测试报告
 
-[![Tests: 39 passed](https://img.shields.io/badge/Tests-39%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests: 47 passed](https://img.shields.io/badge/Tests-47%20passed-brightgreen)](./TEST_REPORT.md)
 
 | 测试类别                     | 测试数 | 状态        |
 | ---------------------------- | ------ | ----------- |
 | load                         | 2      | ✅ 通过     |
+| loadSync                     | 8      | ✅ 通过     |
 | get/set/has/getAll           | 7      | ✅ 通过     |
 | getEnv                       | 1      | ✅ 通过     |
 | 多目录配置                   | 1      | ✅ 通过     |
@@ -320,7 +349,7 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 | 边界情况                     | 3      | ✅ 通过     |
 | ServiceContainer 集成        | 6      | ✅ 通过     |
 | createConfigManager 工厂函数 | 5      | ✅ 通过     |
-| **总计**                     | **39** | ✅ **100%** |
+| **总计**                     | **47** | ✅ **100%** |
 
 详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)。
 
