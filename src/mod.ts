@@ -260,6 +260,8 @@ export class ConfigManager {
   private config: Record<string, unknown> = {};
   /** 文件监听器列表 */
   private watchers: FileWatcher[] = [];
+  /** 热重载防抖定时器，stopWatching 时需清除以防内存泄漏 */
+  private reloadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   /** 服务容器实例 */
   private container?: ServiceContainer;
   /** 管理器名称 */
@@ -504,8 +506,12 @@ export class ConfigManager {
         (async () => {
           for await (const event of watcher) {
             if (event.kind === "modify" || event.kind === "create") {
-              // 延迟重新加载，避免频繁触发
-              setTimeout(async () => {
+              // 防抖：清除之前的定时器，避免重复加载
+              if (this.reloadDebounceTimer !== null) {
+                clearTimeout(this.reloadDebounceTimer);
+              }
+              this.reloadDebounceTimer = setTimeout(async () => {
+                this.reloadDebounceTimer = null;
                 await this.load();
                 if (this.options.onUpdate) {
                   this.options.onUpdate(this.config);
@@ -528,6 +534,11 @@ export class ConfigManager {
       watcher.close();
     }
     this.watchers = [];
+    // 清除待执行的热重载定时器，防止内存泄漏
+    if (this.reloadDebounceTimer !== null) {
+      clearTimeout(this.reloadDebounceTimer);
+      this.reloadDebounceTimer = null;
+    }
   }
 
   /**
