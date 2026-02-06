@@ -1,6 +1,8 @@
 # @dreamer/config
 
-> 一个兼容 Deno 和 Bun 的配置管理库，提供统一的配置接口，支持服务端配置文件管理
+> A config management library compatible with Deno and Bun, providing a unified config interface and server-side config file management
+
+English | [中文 (Chinese)](./README-zh.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/config)](https://jsr.io/@dreamer/config)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
@@ -8,54 +10,53 @@
 
 ---
 
-## 🎯 功能
+## 🎯 Features
 
-配置管理库，提供统一的配置抽象层，支持服务端配置文件管理（JSON、.env、TypeScript
-模块）。
-
----
-
-## ✨ 特性
-
-| 特性                | 说明                                                                                               |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| 🌍 **多环境配置**   | 支持开发环境（dev）、测试环境（test）、生产环境（prod）、环境自动检测、环境特定配置文件            |
-| 📁 **多目录支持**   | 支持配置多个配置目录、按目录顺序加载配置、优先级控制                                               |
-| 📝 **配置文件加载** | TypeScript 模块导出（推荐，类型安全）、JSON 配置文件（纯数据配置）、.env 文件支持                  |
-| ⚡ **同步/异步加载** | 异步 `load()` 支持完整功能，同步 `loadSync()` 支持 JSON 和 .env 文件快速加载                       |
-| 🔀 **配置合并**     | 多目录配置合并、默认配置 + 环境配置合并、深度合并、数组替换、环境变量覆盖配置值                    |
-| ✅ **配置验证**     | 配置结构验证（Schema 验证）、必填字段检查、类型验证、自定义验证规则、验证错误提示                  |
-| 🔐 **环境变量支持** | 自动读取环境变量、环境变量覆盖配置文件值、支持环境变量映射、支持环境变量前缀过滤                   |
-| 🔄 **配置热重载**   | 监听配置文件变化、自动重新加载配置、配置更新事件通知、开发环境自动启用                             |
-| 🔗 **服务容器集成** | 支持 `@dreamer/service` 依赖注入、管理多个 ConfigManager 实例、提供 `createConfigManager` 工厂函数 |
+Config management library with a unified config abstraction layer, supporting server-side config files (JSON, .env, TypeScript modules).
 
 ---
 
-## 🎨 设计原则
+## ✨ Characteristics
 
-__所有 @dreamer/_ 库都遵循以下原则_*：
-
-- **主包（@dreamer/xxx）**：用于服务端（兼容 Deno 和 Bun 运行时）
-- **客户端子包（@dreamer/xxx/client）**：用于客户端（浏览器环境）
-
-这样可以：
-
-- 明确区分服务端和客户端代码
-- 避免在客户端代码中引入服务端依赖
-- 提供更好的类型安全和代码提示
-- 支持更好的 tree-shaking
-
----
-
-## 🎯 使用场景
-
-- **应用配置管理**：数据库连接、API 密钥等
-- **环境变量管理**：多环境部署配置
-- **配置文件管理**：集中管理应用配置
+| Feature | Description |
+|---------|-------------|
+| 🌍 **Multi-environment** | dev, test, prod; auto-detect; environment-specific config files |
+| 📁 **Multi-directory** | Multiple config dirs; load in order; priority control |
+| 📝 **Config loading** | TypeScript module export (recommended, type-safe); JSON; .env |
+| ⚡ **Sync/async load** | Async `load()` full support; sync `loadSync()` for JSON and .env |
+| 🔀 **Config merge** | Multi-dir merge; default + env merge; deep merge; array replace; env var override |
+| ✅ **Config validation** | Schema validation; required fields; type check; custom rules; error messages |
+| 🔐 **Env vars** | Auto-read env vars; env override config; env mapping; prefix filter |
+| 🔄 **Hot reload** | Watch config changes; auto reload; update events; auto-enable in dev |
+| 🔗 **Service container** | `@dreamer/service` DI; multiple ConfigManager; `createConfigManager` factory |
 
 ---
 
-## 📦 安装
+## 🎨 Design Principles
+
+**All @dreamer/* packages follow these principles**:
+
+- **Main package (@dreamer/xxx)**: Server-side (Deno and Bun compatible)
+- **Client subpackage (@dreamer/xxx/client)**: Client-side (browser)
+
+This provides:
+
+- Clear separation of server and client code
+- Avoid server deps in client code
+- Better type safety and hints
+- Better tree-shaking
+
+---
+
+## 🎯 Use Cases
+
+- **App config**: Database connection, API keys, etc.
+- **Env var management**: Multi-environment deployment
+- **Config file management**: Centralized app config
+
+---
+
+## 📦 Installation
 
 ### Deno
 
@@ -71,63 +72,63 @@ bunx jsr add @dreamer/config
 
 ---
 
-## 🌍 环境兼容性
+## 🌍 Environment Compatibility
 
-| 环境       | 版本要求 | 状态                                                     |
-| ---------- | -------- | -------------------------------------------------------- |
-| **Deno**   | 2.5+     | ✅ 完全支持                                              |
-| **Bun**    | 1.0+     | ✅ 完全支持                                              |
-| **服务端** | -        | ✅ 支持（兼容 Deno 和 Bun 运行时，需要文件系统访问权限） |
-| **客户端** | -        | ✅ 支持（浏览器环境，通过 `/client` 子路径使用）         |
+| Environment | Version | Status |
+|-------------|---------|--------|
+| **Deno** | 2.5+ | ✅ Fully supported |
+| **Bun** | 1.0+ | ✅ Fully supported |
+| **Server** | - | ✅ Supported (Deno/Bun, requires filesystem access) |
+| **Client** | - | ✅ Supported (browser via `/client` subpath) |
 
-| 依赖类型     | 包名                                 | 说明                                |
-| ------------ | ------------------------------------ | ----------------------------------- |
-| **核心依赖** | -                                    | 📦 无外部依赖（纯 TypeScript 实现） |
-| **可选依赖** | `jsr:@dreamer/service@^1.0.0-beta.4` | 📦 用于服务容器集成                 |
+| Dependency | Package | Description |
+|-------------|---------|-------------|
+| **Core** | - | 📦 No external deps (pure TypeScript) |
+| **Optional** | `jsr:@dreamer/service@^1.0.0-beta.4` | 📦 Service container integration |
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 基础用法
+### Basic Usage
 
 ```typescript
 import { ConfigManager, createConfig } from "jsr:@dreamer/config";
 
-// 方式1：使用单个配置目录
-// 如果目录中存在 mod.ts，会自动使用 TypeScript 模块（推荐）
-// 如果不存在 mod.ts，会使用 config.json
+// Option 1: Single config directory
+// Uses TypeScript module (mod.ts) if present (recommended)
+// Falls back to config.json if no mod.ts
 const config = createConfig({
-  configDir: "./config", // 配置文件目录
-  env: "dev", // 可选：手动指定环境（dev、test、prod）
+  configDir: "./config", // Config directory
+  env: "dev", // Optional: manual env (dev, test, prod)
 });
 
-// 方式2：使用多个配置目录（后面的目录覆盖前面的目录）
+// Option 2: Multiple config directories (later dirs override earlier)
 const config = createConfig({
   configDirs: [
-    "./config/base", // 基础配置（优先级最低）
-    "./config/modules", // 模块配置（覆盖基础配置）
-    "./config/local", // 本地配置（优先级最高，覆盖前面的配置）
+    "./config/base", // Base config (lowest priority)
+    "./config/modules", // Module config (overrides base)
+    "./config/local", // Local config (highest priority)
   ],
   env: "dev",
 });
 
-// 异步加载配置（支持 TypeScript 模块、JSON、.env）
+// Async load (TypeScript module, JSON, .env)
 await config.load();
 
-// 获取配置
+// Get config
 const dbHost = config.get("database.host");
 const dbPort = config.get("database.port");
 const apiKey = config.get("api.key");
 
-// 获取嵌套配置
+// Get nested config
 const dbConfig = config.get("database");
 // { host: "localhost", port: 5432, name: "mydb" }
 ```
 
-### 同步加载配置
+### Sync Load
 
-如果只使用 JSON 和 .env 文件，可以使用同步加载方式：
+For JSON and .env only, use sync load:
 
 ```typescript
 import { ConfigManager } from "jsr:@dreamer/config";
@@ -138,19 +139,19 @@ const config = new ConfigManager({
   hotReload: false,
 });
 
-// 同步加载配置（仅支持 JSON 和 .env 文件，不支持 TypeScript 模块）
+// Sync load (JSON and .env only, no TypeScript modules)
 config.loadSync();
 
-// 立即使用配置
+// Use config immediately
 const dbHost = config.get("database.host");
-console.log(`数据库地址: ${dbHost}`);
+console.log(`Database host: ${dbHost}`);
 ```
 
-> **注意**：`loadSync()` 不支持 TypeScript 模块配置（`mod.ts`），因为动态导入（`import()`）是异步操作。如果需要使用 TypeScript 模块配置，请使用异步的 `load()` 方法。
+> **Note**: `loadSync()` does not support TypeScript module config (`mod.ts`) because dynamic `import()` is async. Use async `load()` for TypeScript modules.
 
-### 配置文件结构
+### Config File Structure
 
-**config/mod.ts**（默认配置）：
+**config/mod.ts** (default config):
 
 ```typescript
 export default {
@@ -171,7 +172,7 @@ export default {
 };
 ```
 
-**config/mod.dev.ts**（开发环境配置）：
+**config/mod.dev.ts** (dev environment config):
 
 ```typescript
 import baseConfig from "./mod.ts";
@@ -180,21 +181,21 @@ export default {
   ...baseConfig,
   app: {
     ...baseConfig.app,
-    port: 3001, // 覆盖默认端口
+    port: 3001, // Override default port
   },
   database: {
     ...baseConfig.database,
-    port: 5433, // 覆盖默认端口
+    port: 5433, // Override default port
   },
 };
 ```
 
-### 配置验证
+### Config Validation
 
 ```typescript
 import { createConfig, Schema } from "jsr:@dreamer/config";
 
-// 定义配置 Schema
+// Define config schema
 const configSchema = {
   app: {
     name: { type: "string", required: true },
@@ -210,28 +211,28 @@ const configSchema = {
 
 const config = createConfig({
   configDir: "./config",
-  schema: configSchema, // 配置验证 Schema
+  schema: configSchema, // Validation schema
 });
 
-// 加载配置时会自动验证
+// Validation runs on load
 try {
   await config.load();
 } catch (error) {
-  // 配置验证失败
-  console.error("配置验证失败:", error);
+  // Validation failed
+  console.error("Config validation failed:", error);
 }
 ```
 
-### 与服务容器集成
+### Service Container Integration
 
 ```typescript
 import { ServiceContainer } from "jsr:@dreamer/service";
 import { createConfig } from "jsr:@dreamer/config";
 
-// 创建服务容器
+// Create service container
 const container = new ServiceContainer();
 
-// 创建配置管理器
+// Create config manager
 const config = createConfig({
   configDirs: [
     "./config/base",
@@ -242,13 +243,13 @@ const config = createConfig({
   watch: process.env.DENO_ENV === "dev",
 });
 
-// 加载配置
+// Load config
 await config.load();
 
-// 注册到服务容器
+// Register in service container
 container.registerSingleton("config", config);
 
-// 在其他服务中使用配置
+// Use config in other services
 container.registerSingleton("databaseService", () => {
   const config = container.get("config");
   return new DatabaseService({
@@ -260,51 +261,51 @@ container.registerSingleton("databaseService", () => {
 
 ---
 
-## 📚 API 文档
+## 📚 API Reference
 
 ### createConfig
 
-创建配置管理器。
+Create config manager.
 
-**选项**：
+**Options**:
 
-- `configDir?: string`: 单个配置目录
-- `configDirs?: string[]`: 多个配置目录（后面的覆盖前面的）
-- `env?: string`: 环境名称（dev、test、prod）
-- `schema?: Schema`: 配置验证 Schema
-- `watch?: boolean`: 是否监听配置文件变化（默认：开发环境启用）
+- `configDir?: string`: Single config directory
+- `configDirs?: string[]`: Multiple directories (later overrides earlier)
+- `env?: string`: Environment (dev, test, prod)
+- `schema?: Schema`: Validation schema
+- `watch?: boolean`: Watch config files (default: enabled in dev)
 
 ### ConfigManager
 
-配置管理器类。
+Config manager class.
 
-**方法**：
+**Methods**:
 
-| 方法                                     | 说明                                                       |
-| ---------------------------------------- | ---------------------------------------------------------- |
-| `get(key, defaultValue?)`                | 获取配置值（支持点号路径，如 `"database.host"`）           |
-| `set(key, value)`                        | 设置配置值                                                 |
-| `has(key)`                               | 检查配置键是否存在                                         |
-| `getAll()`                               | 获取所有配置                                               |
-| `getEnv()`                               | 获取当前环境                                               |
-| `load()`                                 | 异步加载配置文件（支持 TypeScript 模块、JSON、.env）       |
-| `loadSync()`                             | 同步加载配置文件（仅支持 JSON 和 .env，不支持 TS 模块）    |
-| `stopWatching()`                         | 停止文件监听                                               |
-| `getName()`                              | 获取管理器名称                                             |
-| `setContainer(container)`                | 设置服务容器                                               |
-| `getContainer()`                         | 获取服务容器                                               |
-| `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                          |
+| Method | Description |
+|--------|-------------|
+| `get(key, defaultValue?)` | Get config value (dot path, e.g. `"database.host"`) |
+| `set(key, value)` | Set config value |
+| `has(key)` | Check if key exists |
+| `getAll()` | Get all config |
+| `getEnv()` | Get current environment |
+| `load()` | Async load (TypeScript module, JSON, .env) |
+| `loadSync()` | Sync load (JSON and .env only, no TS modules) |
+| `stopWatching()` | Stop file watching |
+| `getName()` | Get manager name |
+| `setContainer(container)` | Set service container |
+| `getContainer()` | Get service container |
+| `static fromContainer(container, name?)` | Get ConfigManager from container |
 
-### ServiceContainer 集成示例
+### ServiceContainer Integration Example
 
 ```typescript
 import { ConfigManager, createConfigManager } from "jsr:@dreamer/config";
 import { ServiceContainer } from "jsr:@dreamer/service";
 
-// 创建服务容器
+// Create service container
 const container = new ServiceContainer();
 
-// 注册 ConfigManager 到服务容器
+// Register ConfigManager
 container.registerSingleton("config:main", () => {
   const manager = createConfigManager({
     name: "main",
@@ -315,66 +316,65 @@ container.registerSingleton("config:main", () => {
   return manager;
 });
 
-// 从服务容器获取
+// Get from container
 const manager = container.get<ConfigManager>("config:main");
 await manager.load();
 
-// 或者使用静态方法
+// Or use static method
 const sameManager = ConfigManager.fromContainer(container, "main");
 ```
 
 ---
 
-## 🌐 客户端支持
+## 🌐 Client Support
 
-客户端配置支持请查看 [client/README.md](./src/client/README.md)。
+See [client/README.md](./src/client/README.md) for client config support.
 
 ---
 
-## 📊 测试报告
+## 📊 Test Report
 
 [![Tests: 47 passed](https://img.shields.io/badge/Tests-47%20passed-brightgreen)](./TEST_REPORT.md)
 
-| 测试类别                     | 测试数 | 状态        |
-| ---------------------------- | ------ | ----------- |
-| load                         | 2      | ✅ 通过     |
-| loadSync                     | 8      | ✅ 通过     |
-| get/set/has/getAll           | 7      | ✅ 通过     |
-| getEnv                       | 1      | ✅ 通过     |
-| 多目录配置                   | 1      | ✅ 通过     |
-| .env 文件                    | 7      | ✅ 通过     |
-| 环境变量                     | 2      | ✅ 通过     |
-| 配置合并                     | 1      | ✅ 通过     |
-| 热重载                       | 2      | ✅ 通过     |
-| 边界情况                     | 3      | ✅ 通过     |
-| ServiceContainer 集成        | 6      | ✅ 通过     |
-| createConfigManager 工厂函数 | 5      | ✅ 通过     |
-| **总计**                     | **47** | ✅ **100%** |
+| Test Category | Count | Status |
+|---------------|-------|--------|
+| load | 2 | ✅ Passed |
+| loadSync | 8 | ✅ Passed |
+| get/set/has/getAll | 7 | ✅ Passed |
+| getEnv | 1 | ✅ Passed |
+| Multi-directory config | 1 | ✅ Passed |
+| .env file | 7 | ✅ Passed |
+| Environment variables | 2 | ✅ Passed |
+| Config merge | 1 | ✅ Passed |
+| Hot reload | 2 | ✅ Passed |
+| Edge cases | 3 | ✅ Passed |
+| ServiceContainer integration | 6 | ✅ Passed |
+| createConfigManager factory | 5 | ✅ Passed |
+| **Total** | **47** | ✅ **100%** |
 
-详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)。
-
----
-
-## 📝 备注
-
-- **服务端和客户端分离**：通过 `/client` 子路径明确区分服务端和客户端代码
-- **服务端**：专注于配置文件管理（JSON、.env、TypeScript 模块），使用文件系统
-  API
-- **统一接口**：服务端和客户端使用相似的 API 接口，降低学习成本
-- **类型安全**：完整的 TypeScript 类型支持
-- **无外部依赖**：纯 TypeScript 实现
+See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 ---
 
-## 🤝 贡献
+## 📝 Notes
 
-欢迎提交 Issue 和 Pull Request！
+- **Server/client separation**: `/client` subpath for client code
+- **Server**: Config file management (JSON, .env, TypeScript modules), filesystem API
+- **Unified API**: Similar API for server and client
+- **Type-safe**: Full TypeScript support
+- **No external deps**: Pure TypeScript
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-MIT License - 详见 [LICENSE.md](./LICENSE.md)
+Issues and Pull Requests welcome!
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE.md](./LICENSE.md)
 
 ---
 
