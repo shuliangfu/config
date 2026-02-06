@@ -1,225 +1,225 @@
-# @dreamer/config 测试报告
+# @dreamer/config Test Report
 
-## 📊 测试概览
+## 📊 Test Overview
 
-| 项目                 | 值                                       |
-| -------------------- | ---------------------------------------- |
-| **测试库版本**       | `@dreamer/config@1.0.0-beta.4`           |
-| **服务容器版本**     | `@dreamer/service@1.0.0-beta.4`          |
-| **运行时适配器版本** | `@dreamer/runtime-adapter@1.0.0-beta.22` |
-| **测试框架**         | `@dreamer/test@1.0.0-beta.39`            |
-| **测试时间**         | `2026-01-31`                             |
-| **测试环境**         | Deno 2.5+, Bun 1.0+                      |
-
----
-
-## 🎯 测试结果
-
-### 总体统计
-
-| 指标         | 值    |
-| ------------ | ----- |
-| **总测试数** | 47    |
-| **通过**     | 47    |
-| **失败**     | 0     |
-| **通过率**   | 100%  |
-| **执行时间** | ~0.8s |
-
-### 测试文件统计
-
-| 测试文件      | 测试数 | 通过 | 失败 | 状态    |
-| ------------- | ------ | ---- | ---- | ------- |
-| `mod.test.ts` | 47     | 47   | 0    | ✅ 通过 |
+| Item | Value |
+|------|-------|
+| **Config library version** | `@dreamer/config@1.0.0-beta.4` |
+| **Service container version** | `@dreamer/service@1.0.0-beta.4` |
+| **Runtime adapter version** | `@dreamer/runtime-adapter@1.0.0-beta.22` |
+| **Test framework** | `@dreamer/test@1.0.0-beta.39` |
+| **Test date** | `2026-01-31` |
+| **Test environment** | Deno 2.5+, Bun 1.0+ |
 
 ---
 
-## 📋 功能测试详情
+## 🎯 Test Results
 
-### 1. load (mod.test.ts) - 2 个测试
+### Overall Statistics
 
-| 测试场景             | 状态 |
-| -------------------- | ---- |
-| 应该加载配置文件     | ✅   |
-| 应该加载环境特定配置 | ✅   |
+| Metric | Value |
+|--------|-------|
+| **Total tests** | 47 |
+| **Passed** | 47 |
+| **Failed** | 0 |
+| **Pass rate** | 100% |
+| **Execution time** | ~0.8s |
 
-### 2. loadSync (mod.test.ts) - 8 个测试
+### Test File Statistics
 
-| 测试场景                             | 状态 |
-| ------------------------------------ | ---- |
-| 应该同步加载 JSON 配置文件           | ✅   |
-| 应该同步加载环境特定的 JSON 配置     | ✅   |
-| 应该同步加载 .env 文件               | ✅   |
-| 应该同步加载环境特定的 .env 文件     | ✅   |
-| 应该同步合并 JSON 和 .env 配置       | ✅   |
-| 应该同步处理多个目录的配置合并       | ✅   |
-| 应该同步处理不存在的目录             | ✅   |
-| 应该同步处理不存在的配置文件         | ✅   |
-
-### 3. get (mod.test.ts) - 3 个测试
-
-| 测试场景           | 状态 |
-| ------------------ | ---- |
-| 应该获取配置值     | ✅   |
-| 应该返回默认值     | ✅   |
-| 应该获取嵌套配置值 | ✅   |
-
-### 4. set (mod.test.ts) - 2 个测试
-
-| 测试场景           | 状态 |
-| ------------------ | ---- |
-| 应该设置配置值     | ✅   |
-| 应该设置嵌套配置值 | ✅   |
-
-### 5. getAll (mod.test.ts) - 1 个测试
-
-| 测试场景         | 状态 |
-| ---------------- | ---- |
-| 应该返回所有配置 | ✅   |
-
-### 6. has (mod.test.ts) - 1 个测试
-
-| 测试场景             | 状态 |
-| -------------------- | ---- |
-| 应该检查配置是否存在 | ✅   |
-
-### 7. getEnv (mod.test.ts) - 1 个测试
-
-| 测试场景         | 状态 |
-| ---------------- | ---- |
-| 应该返回当前环境 | ✅   |
-
-### 8. 多目录配置 (mod.test.ts) - 1 个测试
-
-| 测试场景                     | 状态 |
-| ---------------------------- | ---- |
-| 应该按顺序合并多个目录的配置 | ✅   |
-
-### 9. .env 文件 (mod.test.ts) - 7 个测试
-
-| 测试场景                                 | 状态 |
-| ---------------------------------------- | ---- |
-| 应该加载 .env 文件                       | ✅   |
-| 应该加载环境特定的 .env 文件             | ✅   |
-| 应该忽略 .env 文件中的注释和空行         | ✅   |
-| 应该处理 .env 文件中的引号               | ✅   |
-| 应该支持 .env 文件中的变量引用           | ✅   |
-| 应该合并多个目录的 .env 文件             | ✅   |
-| 应该正确处理 .env 文件与 JSON 配置的合并 | ✅   |
-
-### 10. 环境变量 (mod.test.ts) - 2 个测试
-
-| 测试场景               | 状态 |
-| ---------------------- | ---- |
-| 应该从环境变量读取配置 | ✅   |
-| 应该支持环境变量前缀   | ✅   |
-
-### 11. 配置合并 (mod.test.ts) - 1 个测试
-
-| 测试场景             | 状态 |
-| -------------------- | ---- |
-| 应该深度合并嵌套对象 | ✅   |
-
-### 12. createConfigManager (mod.test.ts) - 1 个测试
-
-| 测试场景               | 状态 |
-| ---------------------- | ---- |
-| 应该创建配置管理器实例 | ✅   |
-
-### 13. 热重载 (mod.test.ts) - 2 个测试
-
-| 测试场景                 | 状态 |
-| ------------------------ | ---- |
-| 应该可以启动和停止监听   | ✅   |
-| 应该在配置更新时调用回调 | ✅   |
-
-### 14. 边界情况 (mod.test.ts) - 3 个测试
-
-| 测试场景                 | 状态 |
-| ------------------------ | ---- |
-| 应该处理不存在的目录     | ✅   |
-| 应该处理空配置           | ✅   |
-| 应该处理深层嵌套的配置键 | ✅   |
-
-### 15. ConfigManager ServiceContainer 集成 (mod.test.ts) - 6 个测试
-
-| 测试场景                         | 状态 |
-| -------------------------------- | ---- |
-| 应该获取默认管理器名称           | ✅   |
-| 应该获取自定义管理器名称         | ✅   |
-| 应该设置和获取服务容器           | ✅   |
-| 应该从服务容器获取 ConfigManager | ✅   |
-| 应该在服务不存在时返回 undefined | ✅   |
-| 应该支持多个 ConfigManager 实例  | ✅   |
-
-### 16. createConfigManager 工厂函数 (mod.test.ts) - 5 个测试
-
-| 测试场景                    | 状态 |
-| --------------------------- | ---- |
-| 应该创建 ConfigManager 实例 | ✅   |
-| 应该使用默认名称            | ✅   |
-| 应该使用自定义名称          | ✅   |
-| 应该能够在服务容器中注册    | ✅   |
-| 应该支持加载和获取配置      | ✅   |
+| Test File | Tests | Passed | Failed | Status |
+|-----------|-------|--------|--------|--------|
+| `mod.test.ts` | 47 | 47 | 0 | ✅ Passed |
 
 ---
 
-## 📈 测试覆盖分析
+## 📋 Feature Test Details
 
-### 接口方法覆盖
+### 1. load (mod.test.ts) - 2 tests
 
-| 类/接口               | 方法            | 覆盖状态 |
-| --------------------- | --------------- | -------- |
-| `ConfigManager`       | `load`          | ✅       |
-| `ConfigManager`       | `loadSync`      | ✅       |
-| `ConfigManager`       | `get`           | ✅       |
-| `ConfigManager`       | `set`           | ✅       |
-| `ConfigManager`       | `getAll`        | ✅       |
-| `ConfigManager`       | `has`           | ✅       |
-| `ConfigManager`       | `getEnv`        | ✅       |
-| `ConfigManager`       | `stopWatching`  | ✅       |
-| `ConfigManager`       | `getName`       | ✅       |
-| `ConfigManager`       | `setContainer`  | ✅       |
-| `ConfigManager`       | `getContainer`  | ✅       |
-| `ConfigManager`       | `fromContainer` | ✅       |
-| `createConfigManager` | 工厂函数        | ✅       |
+| Test Scenario | Status |
+|---------------|--------|
+| Should load config file | ✅ |
+| Should load environment-specific config | ✅ |
 
-### 边界情况覆盖
+### 2. loadSync (mod.test.ts) - 8 tests
 
-| 场景            | 覆盖状态 |
-| --------------- | -------- |
-| 不存在的目录    | ✅       |
-| 空配置          | ✅       |
-| 深层嵌套配置键  | ✅       |
-| .env 注释和空行 | ✅       |
-| .env 引号处理   | ✅       |
-| .env 变量引用   | ✅       |
-| 服务容器未设置  | ✅       |
-| 服务不存在      | ✅       |
+| Test Scenario | Status |
+|---------------|--------|
+| Should sync load JSON config file | ✅ |
+| Should sync load environment-specific JSON config | ✅ |
+| Should sync load .env file | ✅ |
+| Should sync load environment-specific .env file | ✅ |
+| Should sync merge JSON and .env config | ✅ |
+| Should sync merge config from multiple directories | ✅ |
+| Should sync handle non-existent directory | ✅ |
+| Should sync handle non-existent config file | ✅ |
+
+### 3. get (mod.test.ts) - 3 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should get config value | ✅ |
+| Should return default value | ✅ |
+| Should get nested config value | ✅ |
+
+### 4. set (mod.test.ts) - 2 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should set config value | ✅ |
+| Should set nested config value | ✅ |
+
+### 5. getAll (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should return all config | ✅ |
+
+### 6. has (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should check if config exists | ✅ |
+
+### 7. getEnv (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should return current environment | ✅ |
+
+### 8. Multi-directory Config (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should merge config from multiple directories in order | ✅ |
+
+### 9. .env File (mod.test.ts) - 7 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should load .env file | ✅ |
+| Should load environment-specific .env file | ✅ |
+| Should ignore comments and empty lines in .env | ✅ |
+| Should handle quotes in .env file | ✅ |
+| Should support variable references in .env | ✅ |
+| Should merge .env files from multiple directories | ✅ |
+| Should correctly merge .env with JSON config | ✅ |
+
+### 10. Environment Variables (mod.test.ts) - 2 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should read config from environment variables | ✅ |
+| Should support environment variable prefix | ✅ |
+
+### 11. Config Merge (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should deep merge nested objects | ✅ |
+
+### 12. createConfigManager (mod.test.ts) - 1 test
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should create ConfigManager instance | ✅ |
+
+### 13. Hot Reload (mod.test.ts) - 2 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should start and stop watching | ✅ |
+| Should invoke callback on config update | ✅ |
+
+### 14. Edge Cases (mod.test.ts) - 3 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should handle non-existent directory | ✅ |
+| Should handle empty config | ✅ |
+| Should handle deeply nested config keys | ✅ |
+
+### 15. ConfigManager ServiceContainer Integration (mod.test.ts) - 6 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should get default manager name | ✅ |
+| Should get custom manager name | ✅ |
+| Should set and get service container | ✅ |
+| Should get ConfigManager from service container | ✅ |
+| Should return undefined when service does not exist | ✅ |
+| Should support multiple ConfigManager instances | ✅ |
+
+### 16. createConfigManager Factory (mod.test.ts) - 5 tests
+
+| Test Scenario | Status |
+|---------------|--------|
+| Should create ConfigManager instance | ✅ |
+| Should use default name | ✅ |
+| Should use custom name | ✅ |
+| Should register in service container | ✅ |
+| Should support load and get config | ✅ |
 
 ---
 
-## ✨ 优点
+## 📈 Coverage Analysis
 
-1. **多格式支持**：支持 JSON、TypeScript 模块和 .env 文件
-2. **同步/异步加载**：提供 `load()` 异步和 `loadSync()` 同步两种加载方式
-3. **多环境配置**：dev、test、prod 环境自动切换
-4. **深度合并**：自动深度合并嵌套配置
-5. **热重载**：支持配置文件变更自动重载
-6. **服务容器集成**：支持依赖注入，便于管理多个配置实例
-7. **跨运行时兼容**：兼容 Deno 和 Bun 运行时
+### API Method Coverage
+
+| Class/Interface | Method | Status |
+|-----------------|--------|--------|
+| `ConfigManager` | `load` | ✅ |
+| `ConfigManager` | `loadSync` | ✅ |
+| `ConfigManager` | `get` | ✅ |
+| `ConfigManager` | `set` | ✅ |
+| `ConfigManager` | `getAll` | ✅ |
+| `ConfigManager` | `has` | ✅ |
+| `ConfigManager` | `getEnv` | ✅ |
+| `ConfigManager` | `stopWatching` | ✅ |
+| `ConfigManager` | `getName` | ✅ |
+| `ConfigManager` | `setContainer` | ✅ |
+| `ConfigManager` | `getContainer` | ✅ |
+| `ConfigManager` | `fromContainer` | ✅ |
+| `createConfigManager` | Factory function | ✅ |
+
+### Edge Case Coverage
+
+| Scenario | Status |
+|----------|--------|
+| Non-existent directory | ✅ |
+| Empty config | ✅ |
+| Deeply nested config keys | ✅ |
+| .env comments and empty lines | ✅ |
+| .env quote handling | ✅ |
+| .env variable references | ✅ |
+| Service container not set | ✅ |
+| Service does not exist | ✅ |
 
 ---
 
-## 📝 结论
+## ✨ Strengths
 
-@dreamer/config 的 47 个测试全部通过，覆盖了配置加载（同步/异步）、获取、设置、合并、热重载等核心功能，以及服务容器集成。库支持多种配置格式和多环境配置，提供灵活的配置管理能力。
+1. **Multi-format support**: JSON, TypeScript modules, and .env files
+2. **Sync/async load**: Both `load()` async and `loadSync()` sync
+3. **Multi-environment**: dev, test, prod auto-switching
+4. **Deep merge**: Auto deep merge of nested config
+5. **Hot reload**: Auto reload on config file changes
+6. **Service container integration**: Dependency injection, multiple config instances
+7. **Cross-runtime**: Deno and Bun compatible
+
+---
+
+## 📝 Conclusion
+
+All 47 tests for @dreamer/config pass. Coverage includes config loading (sync/async), get, set, merge, hot reload, and service container integration. The library supports multiple config formats and multi-environment config with flexible management.
 
 ---
 
 <div align="center">
 
-**测试通过率：100%** ✅
+**Pass rate: 100%** ✅
 
-_共 47 个测试 | 全部通过_
+_47 tests | All passed_
 
 </div>
