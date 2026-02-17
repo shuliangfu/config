@@ -4,13 +4,13 @@
 > API 配置
 
 [![JSR](https://jsr.io/badges/@dreamer/config/client)](https://jsr.io/@dreamer/config/client)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../../LICENSE)
 
 ---
 
 ## 服务端支持
 
-服务端配置支持请查看 [服务端文档](../../README.md)。
+服务端配置支持请查看 [服务端文档](../README.md)。
 
 ## 功能
 
@@ -246,7 +246,7 @@ try {
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE.md](../../../LICENSE.md)
+Apache License 2.0 - 详见 [LICENSE](../../../LICENSE)
 
 ---
 
