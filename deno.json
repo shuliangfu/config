@@ -2,7 +2,10 @@
   "name": "@dreamer/config",
   "version": "1.0.1",
   "license": "Apache-2.0",
-  "exports": { ".": "./src/mod.ts", "./client": "./src/client/mod.ts" },
+  "exports": {
+    ".": "./src/mod.ts",
+    "./client": "./src/client/mod.ts"
+  },
   "publish": {
     "include": [
       "src/mod.ts",
@@ -11,15 +14,29 @@
       "NOTICE",
       "README.md"
     ],
-    "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/test/**", "**/tests/**"]
+    "exclude": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/test/**",
+      "**/tests/**"
+    ]
   },
   "lint": {
-    "include": ["src/"],
-    "rules": { "tags": ["recommended"], "exclude": ["no-explicit-any"] }
+    "include": [
+      "src/"
+    ],
+    "rules": {
+      "tags": [
+        "recommended"
+      ],
+      "exclude": [
+        "no-explicit-any"
+      ]
+    }
   },
   "imports": {
     "@dreamer/service": "jsr:@dreamer/service@^1.0.0",
-    "@dreamer/test": "jsr:@dreamer/test@^1.0.7",
-    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.9"
+    "@dreamer/test": "jsr:@dreamer/test@^1.0.10",
+    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.15"
   }
 }
