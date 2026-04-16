@@ -296,6 +296,38 @@ Config manager class.
 | `getContainer()`                         | Get service container                               |
 | `static fromContainer(container, name?)` | Get ConfigManager from container                    |
 
+> **dweb integration: `load()` vs `config/main.ts` order**\
+> The table is correct: `load()` **does** load `.env` from your config
+> directories and merge it.\
+> In **@dreamer/dweb** `initializeConfigManager`, however,
+> `common/config/main.ts` and each app’s `config/main.ts` are dynamically
+> `import`ed **first**, and **only then** `await configManager.load()` runs. So:
+>
+> - **Top-level code in `main.ts` modules** runs **before** `load()`. If keys
+>   exist only on disk in `.env` and are **not** already in the **process
+>   environment**, top-level `getEnv` will not see values that have not been
+>   applied to the process yet.
+> - **v1.0.2+**: `loadSync()` / `load()` merge **`.env` →
+>   `.env.{dev|test|prod}`** (from `resolveConfigEnvFileSuffix`, e.g.
+>   `development` → `dev`) → **`.env.{lowercased raw env}`** (e.g.
+>   `.env.development`) when the raw name differs from the three-letter suffix.
+>   **`preloadDotEnvSync`** reads those layers synchronously and optionally
+>   **`setEnv`s into the process** (default: do not override existing keys).
+>   **@dreamer/dweb** calls `preloadDotEnvSync` at the start of
+>   `initializeConfigManager` for `"."` plus each config directory so top-level
+>   `getEnv` matches the same layering.
+> - After `load()`, `.env` keys still appear as **flat top-level keys** on the
+>   merged `config` (e.g. `DB_HOST`); you can also read them with
+>   `getConfig(container)` after initialization.
+
+### Sync API: layered `.env` and `preloadDotEnvSync`
+
+| Export                       | Description                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `resolveConfigEnvFileSuffix` | Maps `development` / `production` / `prod` / … to `dev` \| `test` \| `prod` for filenames like `.env.dev` |
+| `collectDotEnvLayersSync`    | Merges the three `.env` layers for one directory (does not write the process)                             |
+| `preloadDotEnvSync`          | Merges multiple dirs, optional process write; options: `env`, `override`, `applyToProcess`                |
+
 ### ServiceContainer Integration Example
 
 ```typescript
@@ -332,27 +364,18 @@ See [client/README.md](./client/README.md) for client config support.
 
 ---
 
-## 📊 Test Report
+## 📊 Test report (summary)
 
-[![Tests: 47 passed](https://img.shields.io/badge/Tests-47%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests: 52 passed](https://img.shields.io/badge/Tests-52%20passed-brightgreen)](./TEST_REPORT.md)
 
-| Test Category                | Count  | Status      |
-| ---------------------------- | ------ | ----------- |
-| load                         | 2      | ✅ Passed   |
-| loadSync                     | 8      | ✅ Passed   |
-| get/set/has/getAll           | 7      | ✅ Passed   |
-| getEnv                       | 1      | ✅ Passed   |
-| Multi-directory config       | 1      | ✅ Passed   |
-| .env file                    | 7      | ✅ Passed   |
-| Environment variables        | 2      | ✅ Passed   |
-| Config merge                 | 1      | ✅ Passed   |
-| Hot reload                   | 2      | ✅ Passed   |
-| Edge cases                   | 3      | ✅ Passed   |
-| ServiceContainer integration | 6      | ✅ Passed   |
-| createConfigManager factory  | 5      | ✅ Passed   |
-| **Total**                    | **47** | ✅ **100%** |
+From package root, `deno test -A tests/mod.test.ts`: **52** passed, **0**
+failed, **100%** pass rate (**50** business `it()` cases in `tests/mod.test.ts`,
+plus **2** framework-registered steps such as `afterAll` / cleanup, matching the
+runner total). Covers async/sync load, layered `.env` and `preloadDotEnvSync`,
+get/set, env prefix, deep merge, hot reload, and `ServiceContainer` integration.
 
-See [TEST_REPORT.md](./TEST_REPORT.md) for details.
+**Full sections, per-scenario tables, and API coverage summary:**
+[TEST_REPORT.md](./TEST_REPORT.md).
 
 ---
 
@@ -360,7 +383,8 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for details.
 
 Full history: [CHANGELOG.md](./CHANGELOG.md).
 
-**Latest (v1.0.1)**: Docs restructured (en-US/zh-CN); license Apache-2.0.
+**Latest (v1.0.2)**: Layered `.env` / `preloadDotEnvSync`; dweb preloads env
+before `main.ts`.
 
 ---
 

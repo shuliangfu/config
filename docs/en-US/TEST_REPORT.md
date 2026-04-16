@@ -2,49 +2,49 @@
 
 [English](./TEST_REPORT.md) | [中文 (Chinese)](../zh-CN/TEST_REPORT.md)
 
-## 📊 Test Overview
+## 📊 Test overview
 
-| Item                          | Value                     |
-| ----------------------------- | ------------------------- |
-| **Config library version**    | `@dreamer/config@1.0.0`   |
-| **Service container version** | `@dreamer/service@^1.0.0` |
-| **Test framework**            | `@dreamer/test`           |
-| **Test environment**          | Deno 2.5+, Bun 1.0+       |
+| Item                | Value                                               |
+| ------------------- | --------------------------------------------------- |
+| **Package version** | `@dreamer/config@1.0.2`                             |
+| **Command**         | From package root: `deno test -A tests/mod.test.ts` |
+| **Environment**     | Deno 2.5+ (`nodeModulesDir: auto` in `deno.json`)   |
+| **Test framework**  | `@dreamer/test`                                     |
 
 ---
 
-## 🎯 Test Results
+## 🎯 Test results
 
-### Overall Statistics
+### Overall statistics
 
-| Metric             | Value |
-| ------------------ | ----- |
-| **Total tests**    | 47    |
-| **Passed**         | 47    |
-| **Failed**         | 0     |
-| **Pass rate**      | 100%  |
-| **Execution time** | ~0.8s |
+| Metric             | Value                                          |
+| ------------------ | ---------------------------------------------- |
+| **Total tests**    | 52                                             |
+| **Passed**         | 52                                             |
+| **Failed**         | 0                                              |
+| **Pass rate**      | 100%                                           |
+| **Execution time** | On the order of tens of ms (machine-dependent) |
 
-### Test File Statistics
+### Test file statistics
 
-| Test File     | Tests | Passed | Failed | Status    |
+| Test file     | Tests | Passed | Failed | Status    |
 | ------------- | ----- | ------ | ------ | --------- |
-| `mod.test.ts` | 47    | 47     | 0      | ✅ Passed |
+| `mod.test.ts` | 52    | 52     | 0      | ✅ Passed |
 
 ---
 
-## 📋 Feature Test Details
+## 📋 Feature test details
 
-### 1. load (mod.test.ts) - 2 tests
+### 1. load — 2 tests
 
-| Test Scenario                           | Status |
+| Scenario                                | Status |
 | --------------------------------------- | ------ |
 | Should load config file                 | ✅     |
 | Should load environment-specific config | ✅     |
 
-### 2. loadSync (mod.test.ts) - 8 tests
+### 2. loadSync — 8 tests
 
-| Test Scenario                                      | Status |
+| Scenario                                           | Status |
 | -------------------------------------------------- | ------ |
 | Should sync load JSON config file                  | ✅     |
 | Should sync load environment-specific JSON config  | ✅     |
@@ -55,94 +55,95 @@
 | Should sync handle non-existent directory          | ✅     |
 | Should sync handle non-existent config file        | ✅     |
 
-### 3. get (mod.test.ts) - 3 tests
+### 3. get — 3 tests
 
-| Test Scenario                  | Status |
+| Scenario                       | Status |
 | ------------------------------ | ------ |
 | Should get config value        | ✅     |
 | Should return default value    | ✅     |
 | Should get nested config value | ✅     |
 
-### 4. set (mod.test.ts) - 2 tests
+### 4. set — 2 tests
 
-| Test Scenario                  | Status |
+| Scenario                       | Status |
 | ------------------------------ | ------ |
 | Should set config value        | ✅     |
 | Should set nested config value | ✅     |
 
-### 5. getAll (mod.test.ts) - 1 test
+### 5. getAll — 1 test
 
-| Test Scenario            | Status |
+| Scenario                 | Status |
 | ------------------------ | ------ |
 | Should return all config | ✅     |
 
-### 6. has (mod.test.ts) - 1 test
+### 6. has — 1 test
 
-| Test Scenario                 | Status |
+| Scenario                      | Status |
 | ----------------------------- | ------ |
 | Should check if config exists | ✅     |
 
-### 7. getEnv (mod.test.ts) - 1 test
+### 7. getEnv — 1 test
 
-| Test Scenario                     | Status |
+| Scenario                          | Status |
 | --------------------------------- | ------ |
 | Should return current environment | ✅     |
 
-### 8. Multi-directory Config (mod.test.ts) - 1 test
+### 8. Multi-directory config — 1 test
 
-| Test Scenario                                          | Status |
+| Scenario                                               | Status |
 | ------------------------------------------------------ | ------ |
 | Should merge config from multiple directories in order | ✅     |
 
-### 9. .env File (mod.test.ts) - 7 tests
+### 9. .env file — 8 tests
 
-| Test Scenario                                     | Status |
-| ------------------------------------------------- | ------ |
-| Should load .env file                             | ✅     |
-| Should load environment-specific .env file        | ✅     |
-| Should ignore comments and empty lines in .env    | ✅     |
-| Should handle quotes in .env file                 | ✅     |
-| Should support variable references in .env        | ✅     |
-| Should merge .env files from multiple directories | ✅     |
-| Should correctly merge .env with JSON config      | ✅     |
+| Scenario                                                       | Status |
+| -------------------------------------------------------------- | ------ |
+| Should load .env file                                          | ✅     |
+| Should load environment-specific .env file                     | ✅     |
+| When env is `development`, should load `.env.dev` (suffix map) | ✅     |
+| Should ignore comments and empty lines in .env                 | ✅     |
+| Should handle quotes in .env file                              | ✅     |
+| Should support variable references in .env                     | ✅     |
+| Should merge .env files from multiple directories              | ✅     |
+| Should correctly merge .env with JSON config                   | ✅     |
 
-### 10. Environment Variables (mod.test.ts) - 2 tests
+### 10. Environment variables — 2 tests
 
-| Test Scenario                                 | Status |
+| Scenario                                      | Status |
 | --------------------------------------------- | ------ |
 | Should read config from environment variables | ✅     |
 | Should support environment variable prefix    | ✅     |
 
-### 11. Config Merge (mod.test.ts) - 1 test
+### 11. Config merge — 1 test
 
-| Test Scenario                    | Status |
+| Scenario                         | Status |
 | -------------------------------- | ------ |
 | Should deep merge nested objects | ✅     |
 
-### 12. createConfigManager (mod.test.ts) - 1 test
+### 12. createConfigManager — 1 test
 
-| Test Scenario                        | Status |
+| Scenario                             | Status |
 | ------------------------------------ | ------ |
 | Should create ConfigManager instance | ✅     |
 
-### 13. Hot Reload (mod.test.ts) - 2 tests
+### 13. Hot reload — 2 tests
 
-| Test Scenario                           | Status |
+| Scenario                                | Status |
 | --------------------------------------- | ------ |
 | Should start and stop watching          | ✅     |
 | Should invoke callback on config update | ✅     |
 
-### 14. Edge Cases (mod.test.ts) - 3 tests
+### 14. Edge cases — 3 tests
 
-| Test Scenario                           | Status |
+| Scenario                                | Status |
 | --------------------------------------- | ------ |
 | Should handle non-existent directory    | ✅     |
 | Should handle empty config              | ✅     |
 | Should handle deeply nested config keys | ✅     |
 
-### 15. ConfigManager ServiceContainer Integration (mod.test.ts) - 6 tests
+### 15. ServiceContainer integration — 6 tests
 
-| Test Scenario                                       | Status |
+| Scenario                                            | Status |
 | --------------------------------------------------- | ------ |
 | Should get default manager name                     | ✅     |
 | Should get custom manager name                      | ✅     |
@@ -151,9 +152,9 @@
 | Should return undefined when service does not exist | ✅     |
 | Should support multiple ConfigManager instances     | ✅     |
 
-### 16. createConfigManager Factory (mod.test.ts) - 5 tests
+### 16. createConfigManager factory — 5 tests
 
-| Test Scenario                        | Status |
+| Scenario                             | Status |
 | ------------------------------------ | ------ |
 | Should create ConfigManager instance | ✅     |
 | Should use default name              | ✅     |
@@ -161,62 +162,43 @@
 | Should register in service container | ✅     |
 | Should support load and get config   | ✅     |
 
----
+### 17. Sync env API (layering & preload) — 3 tests
 
-## 📈 Coverage Analysis
-
-### API Method Coverage
-
-| Class/Interface       | Method           | Status |
-| --------------------- | ---------------- | ------ |
-| `ConfigManager`       | `load`           | ✅     |
-| `ConfigManager`       | `loadSync`       | ✅     |
-| `ConfigManager`       | `get`            | ✅     |
-| `ConfigManager`       | `set`            | ✅     |
-| `ConfigManager`       | `getAll`         | ✅     |
-| `ConfigManager`       | `has`            | ✅     |
-| `ConfigManager`       | `getEnv`         | ✅     |
-| `ConfigManager`       | `stopWatching`   | ✅     |
-| `ConfigManager`       | `getName`        | ✅     |
-| `ConfigManager`       | `setContainer`   | ✅     |
-| `ConfigManager`       | `getContainer`   | ✅     |
-| `ConfigManager`       | `fromContainer`  | ✅     |
-| `createConfigManager` | Factory function | ✅     |
-
-### Edge Case Coverage
-
-| Scenario                      | Status |
-| ----------------------------- | ------ |
-| Non-existent directory        | ✅     |
-| Empty config                  | ✅     |
-| Deeply nested config keys     | ✅     |
-| .env comments and empty lines | ✅     |
-| .env quote handling           | ✅     |
-| .env variable references      | ✅     |
-| Service container not set     | ✅     |
-| Service does not exist        | ✅     |
+| Scenario                                                                          | Status |
+| --------------------------------------------------------------------------------- | ------ |
+| `resolveConfigEnvFileSuffix` should normalize common values                       | ✅     |
+| `collectDotEnvLayersSync` should overlay `.env` / `.env.dev` / `.env.development` | ✅     |
+| `preloadDotEnvSync` should write unset keys when `applyToProcess`                 | ✅     |
 
 ---
 
-## ✨ Strengths
+**Aligning with `deno test` totals:** The tables above list **50** business
+`it()` cases. The runner reports **52 passed** because the framework also
+registers teardown steps (e.g. `ConfigManager (afterAll)`, `@dreamer/test`
+cleanup), which matches a normal `deno test -A tests/mod.test.ts` run.
 
-1. **Multi-format support**: JSON, TypeScript modules, and .env files
-2. **Sync/async load**: Both `load()` async and `loadSync()` sync
-3. **Multi-environment**: dev, test, prod auto-switching
-4. **Deep merge**: Auto deep merge of nested config
-5. **Hot reload**: Auto reload on config file changes
-6. **Service container integration**: Dependency injection, multiple config
-   instances
-7. **Cross-runtime**: Deno and Bun compatible
+---
+
+## 📈 API coverage (summary)
+
+| Capability                                                                   | Status |
+| ---------------------------------------------------------------------------- | ------ |
+| `ConfigManager.load` / `loadSync`                                            | ✅     |
+| `get` / `set` / `getAll` / `has` / `getEnv`                                  | ✅     |
+| Multi-dir merge, deep merge, env prefix                                      | ✅     |
+| Layered `.env` (`.env`, `.env.{dev                                           | test   |
+| `preloadDotEnvSync`, `resolveConfigEnvFileSuffix`, `collectDotEnvLayersSync` | ✅     |
+| Hot reload, `ServiceContainer` integration, factory                          | ✅     |
 
 ---
 
 ## 📝 Conclusion
 
-All 47 tests for @dreamer/config pass. Coverage includes config loading
-(sync/async), get, set, merge, hot reload, and service container integration.
-The library supports multiple config formats and multi-environment config with
-flexible management.
+All **`deno test` totals (52)** for `@dreamer/config` pass — **50** business
+`it()` cases are listed in the sections above, plus **2** framework teardown
+steps. Coverage includes async/sync loading, layered `.env`, optional process
+preload, get/set/merge, hot reload, and `@dreamer/service` integration.
+Assertions and edge cases are defined in `tests/mod.test.ts`.
 
 ---
 
@@ -224,6 +206,6 @@ flexible management.
 
 **Pass rate: 100%** ✅
 
-_47 tests | All passed_
+_52 tests | All passed_
 
 </div>

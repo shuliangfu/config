@@ -9,6 +9,29 @@
 
 ---
 
+## [1.0.2] - 2026-04-16
+
+### 新增
+
+- **`preloadDotEnvSync`**：多目录同步合并分层
+  `.env`，并可选将结果写入进程环境（`setEnv`；默认不覆盖已有键）。
+- **`collectDotEnvLayersSync`**：单目录读取 `.env`、`.env.{dev|test|prod}`
+  及可选的 `.env.{原始环境名小写}`，不修改进程环境。
+- **`resolveConfigEnvFileSuffix`**：将常见 `DENO_ENV` / `NODE_ENV` 映射为 `dev`
+  | `test` | `prod`，用于中间层文件名（如 `development` → `.env.dev`）。
+- 导出 **`PreloadDotEnvOptions`**、**`ConfigEnvFileSuffix`** 等类型。
+
+### 变更
+
+- **`ConfigManager` 的 `load` / `loadSync` / 内部 `loadEnvFiles`**：`.env`
+  合并规则与 `collectDotEnvLayersSync` 一致（基础、三档后缀、原始环境文件）。
+- **热重载默认值**：当解析后的环境文件后缀为 `dev`
+  时默认开启热重载（`development` 等仍视为开发态）。
+- **构造函数**：解析当前环境字符串时同时参考 `BUN_ENV`。
+- **`deno.json`**：增加 `nodeModulesDir: "auto"` 便于本地跑测试依赖。
+
+---
+
 ## [1.0.1] - 2026-02-18
 
 ### 变更

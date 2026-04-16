@@ -4,10 +4,12 @@
 
 ## 📊 测试概览
 
-| 项目           | 值                      |
-| -------------- | ----------------------- |
-| **配置库版本** | `@dreamer/config@1.0.0` |
-| **测试环境**   | Deno 2.5+、Bun 1.0+     |
+| 项目           | 值                                                     |
+| -------------- | ------------------------------------------------------ |
+| **配置库版本** | `@dreamer/config@1.0.2`                                |
+| **测试命令**   | 包根目录：`deno test -A tests/mod.test.ts`             |
+| **测试环境**   | Deno 2.5+（`deno.json` 已配置 `nodeModulesDir: auto`） |
+| **测试框架**   | `@dreamer/test`                                        |
 
 ---
 
@@ -15,19 +17,19 @@
 
 ### 总体统计
 
-| 指标         | 值    |
-| ------------ | ----- |
-| **总测试数** | 47    |
-| **通过**     | 47    |
-| **失败**     | 0     |
-| **通过率**   | 100%  |
-| **执行时间** | ~0.8s |
+| 指标         | 值                           |
+| ------------ | ---------------------------- |
+| **总测试数** | 52                           |
+| **通过**     | 52                           |
+| **失败**     | 0                            |
+| **通过率**   | 100%                         |
+| **执行时间** | 约数十毫秒量级（视机器而定） |
 
 ### 测试文件统计
 
 | 测试文件      | 测试数 | 通过 | 失败 | 状态    |
 | ------------- | ------ | ---- | ---- | ------- |
-| `mod.test.ts` | 47     | 47   | 0    | ✅ 通过 |
+| `mod.test.ts` | 52     | 52   | 0    | ✅ 通过 |
 
 ---
 
@@ -35,136 +37,166 @@
 
 ### 1. load - 2 个测试
 
-| 场景                                    | 状态 |
-| --------------------------------------- | ---- |
-| Should load config file                 | ✅   |
-| Should load environment-specific config | ✅   |
+| 场景                 | 状态 |
+| -------------------- | ---- |
+| 应该加载配置文件     | ✅   |
+| 应该加载环境特定配置 | ✅   |
 
 ### 2. loadSync - 8 个测试
 
-| 场景                                               | 状态 |
-| -------------------------------------------------- | ---- |
-| Should sync load JSON config file                  | ✅   |
-| Should sync load environment-specific JSON config  | ✅   |
-| Should sync load .env file                         | ✅   |
-| Should sync load environment-specific .env file    | ✅   |
-| Should sync merge JSON and .env config             | ✅   |
-| Should sync merge config from multiple directories | ✅   |
-| Should sync handle non-existent directory          | ✅   |
-| Should sync handle non-existent config file        | ✅   |
+| 场景                             | 状态 |
+| -------------------------------- | ---- |
+| 应该同步加载 JSON 配置文件       | ✅   |
+| 应该同步加载环境特定的 JSON 配置 | ✅   |
+| 应该同步加载 .env 文件           | ✅   |
+| 应该同步加载环境特定的 .env 文件 | ✅   |
+| 应该同步合并 JSON 和 .env 配置   | ✅   |
+| 应该同步处理多个目录的配置合并   | ✅   |
+| 应该同步处理不存在的目录         | ✅   |
+| 应该同步处理不存在的配置文件     | ✅   |
 
 ### 3. get - 3 个测试
 
-| 场景                           | 状态 |
-| ------------------------------ | ---- |
-| Should get config value        | ✅   |
-| Should return default value    | ✅   |
-| Should get nested config value | ✅   |
+| 场景               | 状态 |
+| ------------------ | ---- |
+| 应该获取配置值     | ✅   |
+| 应该返回默认值     | ✅   |
+| 应该获取嵌套配置值 | ✅   |
 
 ### 4. set - 2 个测试
 
-| 场景                           | 状态 |
-| ------------------------------ | ---- |
-| Should set config value        | ✅   |
-| Should set nested config value | ✅   |
+| 场景               | 状态 |
+| ------------------ | ---- |
+| 应该设置配置值     | ✅   |
+| 应该设置嵌套配置值 | ✅   |
 
 ### 5. getAll - 1 个测试
 
-| 场景                     | 状态 |
-| ------------------------ | ---- |
-| Should return all config | ✅   |
+| 场景             | 状态 |
+| ---------------- | ---- |
+| 应该返回所有配置 | ✅   |
 
 ### 6. has - 1 个测试
 
-| 场景                          | 状态 |
-| ----------------------------- | ---- |
-| Should check if config exists | ✅   |
+| 场景                 | 状态 |
+| -------------------- | ---- |
+| 应该检查配置是否存在 | ✅   |
 
 ### 7. getEnv - 1 个测试
 
-| 场景                              | 状态 |
-| --------------------------------- | ---- |
-| Should return current environment | ✅   |
+| 场景             | 状态 |
+| ---------------- | ---- |
+| 应该返回当前环境 | ✅   |
 
 ### 8. 多目录配置 - 1 个测试
 
-| 场景                                                   | 状态 |
-| ------------------------------------------------------ | ---- |
-| Should merge config from multiple directories in order | ✅   |
+| 场景                                             | 状态 |
+| ------------------------------------------------ | ---- |
+| 应该按顺序合并多个目录的配置（后面的覆盖前面的） | ✅   |
 
-### 9. .env 文件 - 7 个测试
+### 9. .env 文件 - 8 个测试
 
-| 场景                                              | 状态 |
-| ------------------------------------------------- | ---- |
-| Should load .env file                             | ✅   |
-| Should load environment-specific .env file        | ✅   |
-| Should ignore comments and empty lines in .env    | ✅   |
-| Should handle quotes in .env file                 | ✅   |
-| Should support variable references in .env        | ✅   |
-| Should merge .env files from multiple directories | ✅   |
-| Should correctly merge .env with JSON config      | ✅   |
+| 场景                                             | 状态 |
+| ------------------------------------------------ | ---- |
+| 应该加载 .env 文件                               | ✅   |
+| 应该加载环境特定的 .env 文件                     | ✅   |
+| env 为 development 时应加载 .env.dev（三档后缀） | ✅   |
+| 应该忽略 .env 文件中的注释和空行                 | ✅   |
+| 应该处理 .env 文件中的引号                       | ✅   |
+| 应该支持 .env 文件中的变量引用                   | ✅   |
+| 应该合并多个目录的 .env 文件（后面的覆盖前面的） | ✅   |
+| 应该正确处理 .env 文件与 JSON 配置的合并         | ✅   |
 
 ### 10. 环境变量 - 2 个测试
 
-| 场景                                          | 状态 |
-| --------------------------------------------- | ---- |
-| Should read config from environment variables | ✅   |
-| Should support environment variable prefix    | ✅   |
+| 场景                   | 状态 |
+| ---------------------- | ---- |
+| 应该从环境变量读取配置 | ✅   |
+| 应该支持环境变量前缀   | ✅   |
 
 ### 11. 配置合并 - 1 个测试
 
-| 场景                             | 状态 |
-| -------------------------------- | ---- |
-| Should deep merge nested objects | ✅   |
+| 场景                 | 状态 |
+| -------------------- | ---- |
+| 应该深度合并嵌套对象 | ✅   |
 
 ### 12. createConfigManager - 1 个测试
 
-| 场景                                 | 状态 |
-| ------------------------------------ | ---- |
-| Should create ConfigManager instance | ✅   |
+| 场景                   | 状态 |
+| ---------------------- | ---- |
+| 应该创建配置管理器实例 | ✅   |
 
 ### 13. 热重载 - 2 个测试
 
-| 场景                                    | 状态 |
-| --------------------------------------- | ---- |
-| Should start and stop watching          | ✅   |
-| Should invoke callback on config update | ✅   |
+| 场景                     | 状态 |
+| ------------------------ | ---- |
+| 应该可以启动和停止监听   | ✅   |
+| 应该在配置更新时调用回调 | ✅   |
 
 ### 14. 边界情况 - 3 个测试
 
-| 场景                                    | 状态 |
-| --------------------------------------- | ---- |
-| Should handle non-existent directory    | ✅   |
-| Should handle empty config              | ✅   |
-| Should handle deeply nested config keys | ✅   |
+| 场景                     | 状态 |
+| ------------------------ | ---- |
+| 应该处理不存在的目录     | ✅   |
+| 应该处理空配置           | ✅   |
+| 应该处理深层嵌套的配置键 | ✅   |
 
 ### 15. ServiceContainer 集成 - 6 个测试
 
-| 场景                                                | 状态 |
-| --------------------------------------------------- | ---- |
-| Should get default manager name                     | ✅   |
-| Should get custom manager name                      | ✅   |
-| Should set and get service container                | ✅   |
-| Should get ConfigManager from service container     | ✅   |
-| Should return undefined when service does not exist | ✅   |
-| Should support multiple ConfigManager instances     | ✅   |
+| 场景                             | 状态 |
+| -------------------------------- | ---- |
+| 应该获取默认管理器名称           | ✅   |
+| 应该获取自定义管理器名称         | ✅   |
+| 应该设置和获取服务容器           | ✅   |
+| 应该从服务容器获取 ConfigManager | ✅   |
+| 应该在服务不存在时返回 undefined | ✅   |
+| 应该支持多个 ConfigManager 实例  | ✅   |
 
-### 16. createConfigManager 工厂 - 5 个测试
+### 16. createConfigManager 工厂函数 - 5 个测试
 
-| 场景                                 | 状态 |
-| ------------------------------------ | ---- |
-| Should create ConfigManager instance | ✅   |
-| Should use default name              | ✅   |
-| Should use custom name               | ✅   |
-| Should register in service container | ✅   |
-| Should support load and get config   | ✅   |
+| 场景                        | 状态 |
+| --------------------------- | ---- |
+| 应该创建 ConfigManager 实例 | ✅   |
+| 应该使用默认名称            | ✅   |
+| 应该使用自定义名称          | ✅   |
+| 应该能够在服务容器中注册    | ✅   |
+| 应该支持加载和获取配置      | ✅   |
+
+### 17. 同步 env API（分层与 preload）- 3 个测试
+
+| 场景                                                                   | 状态 |
+| ---------------------------------------------------------------------- | ---- |
+| resolveConfigEnvFileSuffix 应规范化常见取值                            | ✅   |
+| collectDotEnvLayersSync 应按 .env、.env.dev、.env.development 顺序覆盖 | ✅   |
+| preloadDotEnvSync 应在 applyToProcess 时写入未占用键                   | ✅   |
+
+---
+
+**与 `deno test` 汇总条数**：上表业务用例共 **50** 条 `it()`；`deno test` 输出
+**52 passed** 另含测试框架注册的步骤（如根 `describe` 的
+`ConfigManager (afterAll)`、`@dreamer/test` 清理等），与仓库实际运行结果一致。
+
+---
+
+## 📈 API 覆盖（摘要）
+
+| 能力                                                                           | 状态 |
+| ------------------------------------------------------------------------------ | ---- |
+| `ConfigManager.load` / `loadSync`                                              | ✅   |
+| `get` / `set` / `getAll` / `has` / `getEnv`                                    | ✅   |
+| 多目录合并、深度合并、环境变量前缀                                             | ✅   |
+| `.env` 分层（`.env`、`.env.{dev\|test\|prod}`、可选 `.env.{原始}`）            | ✅   |
+| `preloadDotEnvSync` / `resolveConfigEnvFileSuffix` / `collectDotEnvLayersSync` | ✅   |
+| 热重载、`ServiceContainer` 集成、`createConfigManager` 工厂                    | ✅   |
 
 ---
 
 ## 📝 结论
 
-@dreamer/config 共 47
-个测试全部通过。覆盖配置加载（同步/异步）、get/set、合并、热重载及服务容器集成，支持多格式与多环境配置。
+`@dreamer/config` 当前 **`deno test` 汇总 52 条全部通过**（其中 **50** 条业务
+`it()` 见上文分节，**2** 条为框架收尾步骤）。覆盖异步/同步加载、分层
+`.env`、进程环境预热、读写与合并、热重载及与 `@dreamer/service`
+的集成；具体断言与边界以 `tests/mod.test.ts` 为准。
 
 ---
 
@@ -172,6 +204,6 @@
 
 **通过率：100%** ✅
 
-_47 个测试 | 全部通过_
+_52 个测试 | 全部通过_
 
 </div>

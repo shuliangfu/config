@@ -7,7 +7,7 @@
  * - 多环境配置（dev、test、prod）
  * - 多目录支持（按优先级合并）
  * - 配置文件加载（TypeScript 模块或 JSON）
- * - .env 文件支持
+ * - .env 文件支持（同步合并 `.env`、`.env.{dev|test|prod}`、可选 `.env.{原始环境名}`；`preloadDotEnvSync` 可写入进程环境）
  * - 配置合并（深度合并）
  * - 配置验证（Schema 验证）
  * - 环境变量支持
@@ -23,9 +23,11 @@ import {
   type FileWatcher,
   getEnv,
   getEnvAll,
+  hasEnv,
   readTextFile,
   readTextFileSync,
   realPath,
+  setEnv,
   stat,
   watchFs,
 } from "@dreamer/runtime-adapter";
@@ -153,6 +155,151 @@ function loadEnvFileSync(filePath: string): Record<string, string> {
   }
 }
 
+/** 用于 `.env.{dev|test|prod}` 文件名的三档后缀 */
+export type ConfigEnvFileSuffix = "dev" | "test" | "prod";
+
+/**
+ * 将常见 `DENO_ENV` / `NODE_ENV` / `BUN_ENV` 取值规范为三档文件名后缀，用于选择 `.env.dev`、`.env.test`、`.env.prod`。
+ * 例如 `development`、`dev` → `dev`；`production`、`prod` → `prod`。
+ *
+ * @param raw 环境名字符串（通常来自配置选项或环境变量）
+ * @returns `dev` | `test` | `prod`
+ */
+export function resolveConfigEnvFileSuffix(raw: string): ConfigEnvFileSuffix {
+  const s = raw.trim().toLowerCase();
+  if (s === "production" || s === "prod") return "prod";
+  if (s === "test") return "test";
+  return "dev";
+}
+
+/**
+ * 同步合并单个目录下的多份 `.env` 层；后者覆盖前者。
+ * 顺序：`.env` → `.env.{dev|test|prod}`（见 {@link resolveConfigEnvFileSuffix}）→ 若原始环境名（小写）与三档后缀不同，再尝试 `.env.{原始}`（如 `.env.development`）。
+ *
+ * @param directory 配置目录（相对或绝对路径，可省略末尾 `/`）
+ * @param envRaw 与 `ConfigManager` 的 `env` 选项语义一致的环境名字符串
+ * @returns 扁平键值（均为字符串）
+ */
+export function collectDotEnvLayersSync(
+  directory: string,
+  envRaw: string,
+): Record<string, string> {
+  const dir = directory.replace(/\/+$/, "") || ".";
+  let merged: Record<string, string> = {
+    ...loadEnvFileSync(`${dir}/.env`),
+  };
+  const suffix = resolveConfigEnvFileSuffix(envRaw);
+  merged = {
+    ...merged,
+    ...loadEnvFileSync(`${dir}/.env.${suffix}`),
+  };
+  const exact = envRaw.trim().toLowerCase();
+  if (exact && exact !== suffix) {
+    merged = {
+      ...merged,
+      ...loadEnvFileSync(`${dir}/.env.${exact}`),
+    };
+  }
+  return merged;
+}
+
+/**
+ * 异步合并单个目录下的多份 `.env` 层；语义与 {@link collectDotEnvLayersSync} 一致。
+ *
+ * @param directory 配置目录
+ * @param envRaw 环境名原始字符串
+ * @returns 扁平键值
+ */
+async function collectDotEnvLayersAsync(
+  directory: string,
+  envRaw: string,
+): Promise<Record<string, string>> {
+  const dir = directory.replace(/\/+$/, "") || ".";
+  let merged: Record<string, string> = {
+    ...(await loadEnvFile(`${dir}/.env`)),
+  };
+  const suffix = resolveConfigEnvFileSuffix(envRaw);
+  merged = {
+    ...merged,
+    ...(await loadEnvFile(`${dir}/.env.${suffix}`)),
+  };
+  const exact = envRaw.trim().toLowerCase();
+  if (exact && exact !== suffix) {
+    merged = {
+      ...merged,
+      ...(await loadEnvFile(`${dir}/.env.${exact}`)),
+    };
+  }
+  return merged;
+}
+
+/** {@link preloadDotEnvSync} 的选项 */
+export interface PreloadDotEnvOptions {
+  /** 环境字符串；不传则从 `DENO_ENV`、`NODE_ENV`、`BUN_ENV` 依次读取，皆无则 `dev` */
+  env?: string;
+  /** 为 `true` 时覆盖进程中已有的同名变量；默认 `false`（与常见 dotenv 行为一致） */
+  override?: boolean;
+  /** 为 `true`（默认）时将合并结果写入进程环境，便于在任意模块顶层使用 `getEnv` */
+  applyToProcess?: boolean;
+}
+
+/**
+ * 对目录列表去重并保持首次出现顺序（用于合并 `.env` 时后者覆盖前者）。
+ *
+ * @param dirs 原始目录列表
+ * @returns 去重后的目录列表
+ */
+function dedupeDirectoriesPreserveOrder(dirs: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const d of dirs) {
+    const n = d.replace(/\/+$/, "") || ".";
+    if (seen.has(n)) continue;
+    seen.add(n);
+    out.push(n);
+  }
+  return out;
+}
+
+/**
+ * 同步从多个目录加载 `.env` 分层文件，并可选择写入进程环境（`setEnv`）。
+ * 典型用途：在动态 `import` 各应用 `config/main.ts` **之前**调用，使模块顶层 `getEnv("DB_HOST")` 等能读到仓库根或各配置目录下的变量。
+ *
+ * @param directories 按顺序加载；同键后者覆盖前者
+ * @param options 见 {@link PreloadDotEnvOptions}
+ * @returns 合并后的扁平环境表（拷贝）
+ */
+export function preloadDotEnvSync(
+  directories: string[],
+  options: PreloadDotEnvOptions = {},
+): Record<string, string> {
+  const envRaw =
+    (options.env !== undefined && String(options.env).trim() !== "")
+      ? String(options.env).trim()
+      : getEnv("DENO_ENV") ||
+        getEnv("NODE_ENV") ||
+        getEnv("BUN_ENV") ||
+        "dev";
+
+  const ordered = dedupeDirectoriesPreserveOrder(directories);
+  let merged: Record<string, string> = {};
+  for (const dir of ordered) {
+    merged = { ...merged, ...collectDotEnvLayersSync(dir, envRaw) };
+  }
+
+  const applyToProcess = options.applyToProcess !== false;
+  if (applyToProcess) {
+    const override = options.override === true;
+    for (const [k, v] of Object.entries(merged)) {
+      if (override || !hasEnv(k)) {
+        setEnv(k, v);
+      }
+    }
+  }
+
+  return { ...merged };
+}
+
 /**
  * 加载 JSON 配置文件（异步版本）
  */
@@ -273,6 +420,7 @@ export class ConfigManager {
    */
   constructor(options: ConfigManagerOptions = {}) {
     const env = options.env || getEnv("DENO_ENV") ||
+      getEnv("BUN_ENV") ||
       getEnv("NODE_ENV") || "dev";
     this.options = {
       directories: options.directories || ["./config"],
@@ -280,7 +428,7 @@ export class ConfigManager {
       envPrefix: options.envPrefix || "",
       hotReload: options.hotReload !== undefined
         ? options.hotReload
-        : env === "dev",
+        : resolveConfigEnvFileSuffix(env) === "dev",
       onUpdate: options.onUpdate,
     };
     this.managerName = options.name || "default";
@@ -368,9 +516,10 @@ export class ConfigManager {
    * 加载优先级（从低到高）：
    * 1. 默认 JSON 配置（config.json）
    * 2. 环境特定 JSON 配置（config.{env}.json）
-   * 3. 默认 .env 文件
-   * 4. 环境特定 .env 文件（.env.{env}）
-   * 5. 环境变量（最高优先级）
+   * 3. 默认 `.env` 文件
+   * 4. `.env.{dev|test|prod}`（由 {@link resolveConfigEnvFileSuffix} 解析，如 `.env.dev`、`.env.prod`）
+   * 5. 若原始 `env` 小写与三档后缀不同，再加载 `.env.{原始}`（如 `.env.development`）
+   * 6. 进程环境变量（最高优先级）
    *
    * @example
    * ```typescript
@@ -403,17 +552,10 @@ export class ConfigManager {
       }
     }
 
-    // 2. 加载 .env 文件
+    // 2. 加载 .env 分层文件（.env、.env.{dev|test|prod}、可选 .env.{原始 env 小写}）
     for (const dir of this.options.directories) {
-      // 加载默认 .env
-      const defaultEnvPath = `${dir}/.env`;
-      const defaultEnv = loadEnvFileSync(defaultEnvPath);
-      mergedConfig = deepMerge(mergedConfig, defaultEnv);
-
-      // 加载环境特定 .env
-      const envPath = `${dir}/.env.${this.options.env}`;
-      const envFileConfig = loadEnvFileSync(envPath);
-      mergedConfig = deepMerge(mergedConfig, envFileConfig);
+      const envLayer = collectDotEnvLayersSync(dir, this.options.env);
+      mergedConfig = deepMerge(mergedConfig, envLayer);
     }
 
     // 3. 环境变量覆盖（最高优先级）
@@ -476,18 +618,11 @@ export class ConfigManager {
   private async loadEnvFiles(): Promise<Record<string, unknown>> {
     const env: Record<string, unknown> = {};
 
-    // 加载默认 .env
     for (const dir of this.options.directories) {
-      const defaultEnvPath = `${dir}/.env`;
-      const defaultEnv = await loadEnvFile(defaultEnvPath);
-      Object.assign(env, defaultEnv);
-    }
-
-    // 加载环境特定 .env
-    for (const dir of this.options.directories) {
-      const envPath = `${dir}/.env.${this.options.env}`;
-      const envFile = await loadEnvFile(envPath);
-      Object.assign(env, envFile);
+      const layer = await collectDotEnvLayersAsync(dir, this.options.env);
+      for (const [k, v] of Object.entries(layer)) {
+        env[k] = v;
+      }
     }
 
     return env;
