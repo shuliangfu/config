@@ -4,11 +4,13 @@
 
 import {
   cwd,
+  deleteEnv,
   IS_BUN,
   IS_DENO,
   join,
   mkdir,
   remove,
+  setEnv,
   writeTextFile,
 } from "@dreamer/runtime-adapter";
 import { ServiceContainer } from "@dreamer/service";
@@ -328,6 +330,27 @@ describe("ConfigManager", () => {
         hotReload: false,
       });
       expect(manager.getEnv()).toBe("prod");
+    });
+
+    /**
+     * 有参 `getEnv(key)` 与 `env.get` 应委托 runtime-adapter 读取进程环境；无参仍为配置环境名。
+     */
+    it("getEnv(key) 与 env.get / env.has 应读取进程环境变量", () => {
+      const key = "CONFIG_MANAGER_READ_ENV_TEST_KEY";
+      setEnv(key, "from-test");
+      try {
+        const manager = new ConfigManager({
+          directories: [testDir],
+          env: "prod",
+          hotReload: false,
+        });
+        expect(manager.getEnv(key)).toBe("from-test");
+        expect(manager.env.get(key)).toBe("from-test");
+        expect(manager.env.has(key)).toBe(true);
+        expect(manager.env.has("NONEXISTENT_KEY_XYZ_999")).toBe(false);
+      } finally {
+        deleteEnv(key);
+      }
     });
   });
 
@@ -917,6 +940,29 @@ describe("ConfigManager", () => {
       } finally {
         deleteEnv(key);
         await remove(dir, { recursive: true }).catch(() => {});
+      }
+    });
+
+    /**
+     * 后序目录 .env 中某键为空字符串时，不得冲掉先序目录已合并出的非空值（典型：根有 DB_PASS、后端目录误写 DB_PASS=）。
+     */
+    it("preloadDotEnvSync 多目录合并时后层空字符串不应覆盖前层非空", async () => {
+      const dir1 = join(testDir, "preload-layer1");
+      const dir2 = join(testDir, "preload-layer2");
+      await mkdir(dir1, { recursive: true });
+      await mkdir(dir2, { recursive: true });
+      const key = `CFG_PRELOAD_LAYER_${Date.now()}`;
+      await writeTextFile(join(dir1, ".env"), `${key}=from_root\n`);
+      await writeTextFile(join(dir2, ".env"), `${key}=\n`);
+      const { deleteEnv, getEnv } = await import("@dreamer/runtime-adapter");
+      try {
+        deleteEnv(key);
+        preloadDotEnvSync([dir1, dir2], { env: "dev", applyToProcess: true });
+        expect(getEnv(key)).toBe("from_root");
+      } finally {
+        deleteEnv(key);
+        await remove(dir1, { recursive: true }).catch(() => {});
+        await remove(dir2, { recursive: true }).catch(() => {});
       }
     });
   });

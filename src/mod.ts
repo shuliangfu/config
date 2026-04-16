@@ -16,12 +16,17 @@
  * 环境兼容性：
  * - 服务端：✅ 支持（Deno 和 Bun 运行时）
  * - 客户端：✅ 支持（浏览器环境，通过 `jsr:@dreamer/config/client` 使用）
+ *
+ * **进程环境再导出**：包根导出 `getEnv`、`hasEnv`、`setEnv`、`deleteEnv`（实现来自
+ * `@dreamer/runtime-adapter`），便于只依赖本包读取进程变量。它们**不读取**磁盘上的 `.env`；
+ * `.env` / `.env.dev` / `.env.prod` 等分层合并须先调用 {@link preloadDotEnvSync} 或 `ConfigManager.load`
+ * 写入进程后，`getEnv` 才能读到合并结果。亦可使用 `ConfigManager` 实例的 `getEnv("KEY")` 与 `env.get`。
  */
 
 import {
   existsSync,
   type FileWatcher,
-  getEnv,
+  getEnv as readProcessEnv,
   getEnvAll,
   hasEnv,
   readTextFile,
@@ -32,6 +37,8 @@ import {
   watchFs,
 } from "@dreamer/runtime-adapter";
 import type { ServiceContainer } from "@dreamer/service";
+
+export { deleteEnv, getEnv, hasEnv, setEnv } from "@dreamer/runtime-adapter";
 
 /**
  * 配置管理器选项
@@ -120,7 +127,7 @@ function parseEnvFile(content: string): Record<string, string> {
 
     // 展开变量引用 ${VAR}
     value = value.replace(/\${([^}]+)}/g, (_, varName) => {
-      return getEnv(varName.trim()) || "";
+      return readProcessEnv(varName.trim()) || "";
     });
 
     env[key] = value;
@@ -237,7 +244,11 @@ async function collectDotEnvLayersAsync(
 export interface PreloadDotEnvOptions {
   /** 环境字符串；不传则从 `DENO_ENV`、`NODE_ENV`、`BUN_ENV` 依次读取，皆无则 `dev` */
   env?: string;
-  /** 为 `true` 时覆盖进程中已有的同名变量；默认 `false`（与常见 dotenv 行为一致） */
+  /**
+   * 为 `true` 时无条件用合并后的 `.env` 值覆盖进程中的同名变量。
+   * 为 `false`（默认）时：仅当进程中**未定义**该键，或已有值为**空字符串 / 仅空白**时写入；
+   * 避免 shell 里 `export DB_PASS=` 占位导致无法注入 `.env` 中的非空密码。
+   */
   override?: boolean;
   /** 为 `true`（默认）时将合并结果写入进程环境，便于在任意模块顶层使用 `getEnv` */
   applyToProcess?: boolean;
@@ -262,10 +273,59 @@ function dedupeDirectoriesPreserveOrder(dirs: string[]): string[] {
 }
 
 /**
+ * 按目录顺序合并各目录下的分层 `.env`（每个目录内仍由 {@link collectDotEnvLayersSync} 处理）。
+ * 若后序目录某键为**空字符串**，而已有合并值为**非空**，则保留已有值，避免子目录误放 `DB_PASS=` 冲掉仓库根密码。
+ *
+ * @param ordered 已去重的目录列表
+ * @param envRaw 传给 `collectDotEnvLayersSync` 的环境名
+ * @returns 扁平合并结果
+ */
+function mergeDotEnvDirectoriesPreserveNonEmpty(
+  ordered: string[],
+  envRaw: string,
+): Record<string, string> {
+  const merged: Record<string, string> = {};
+  for (const dir of ordered) {
+    const layer = collectDotEnvLayersSync(dir, envRaw);
+    for (const [k, v] of Object.entries(layer)) {
+      if (v === "" && merged[k] !== undefined && merged[k] !== "") {
+        continue;
+      }
+      merged[k] = v;
+    }
+  }
+  return merged;
+}
+
+/**
+ * 异步版 {@link mergeDotEnvDirectoriesPreserveNonEmpty}，供 `ConfigManager.load` 使用。
+ *
+ * @param ordered 配置目录列表（顺序与构造 `ConfigManager` 时一致）
+ * @param envRaw 环境名
+ * @returns 扁平合并结果
+ */
+async function mergeDotEnvDirectoriesPreserveNonEmptyAsync(
+  ordered: string[],
+  envRaw: string,
+): Promise<Record<string, string>> {
+  const merged: Record<string, string> = {};
+  for (const dir of ordered) {
+    const layer = await collectDotEnvLayersAsync(dir, envRaw);
+    for (const [k, v] of Object.entries(layer)) {
+      if (v === "" && merged[k] !== undefined && merged[k] !== "") {
+        continue;
+      }
+      merged[k] = v;
+    }
+  }
+  return merged;
+}
+
+/**
  * 同步从多个目录加载 `.env` 分层文件，并可选择写入进程环境（`setEnv`）。
  * 典型用途：在动态 `import` 各应用 `config/main.ts` **之前**调用，使模块顶层 `getEnv("DB_HOST")` 等能读到仓库根或各配置目录下的变量。
  *
- * @param directories 按顺序加载；同键后者覆盖前者
+ * @param directories 按顺序加载；同键后者覆盖前者（后层**空字符串**不覆盖前层非空，见 {@link mergeDotEnvDirectoriesPreserveNonEmpty}）
  * @param options 见 {@link PreloadDotEnvOptions}
  * @returns 合并后的扁平环境表（拷贝）
  */
@@ -276,22 +336,21 @@ export function preloadDotEnvSync(
   const envRaw =
     (options.env !== undefined && String(options.env).trim() !== "")
       ? String(options.env).trim()
-      : getEnv("DENO_ENV") ||
-        getEnv("NODE_ENV") ||
-        getEnv("BUN_ENV") ||
+      : readProcessEnv("DENO_ENV") ||
+        readProcessEnv("NODE_ENV") ||
+        readProcessEnv("BUN_ENV") ||
         "dev";
 
   const ordered = dedupeDirectoriesPreserveOrder(directories);
-  let merged: Record<string, string> = {};
-  for (const dir of ordered) {
-    merged = { ...merged, ...collectDotEnvLayersSync(dir, envRaw) };
-  }
+  const merged = mergeDotEnvDirectoriesPreserveNonEmpty(ordered, envRaw);
 
   const applyToProcess = options.applyToProcess !== false;
   if (applyToProcess) {
     const override = options.override === true;
     for (const [k, v] of Object.entries(merged)) {
-      if (override || !hasEnv(k)) {
+      const current = readProcessEnv(k);
+      const isVacant = current === undefined || current.trim() === "";
+      if (override || isVacant) {
         setEnv(k, v);
       }
     }
@@ -299,6 +358,11 @@ export function preloadDotEnvSync(
 
   return { ...merged };
 }
+
+/**
+ * 在读取 DB_* 等常量之前，用**本仓库解析到的** `@dreamer/config` 同步合并分层 `.env` 并写入进程。
+ */
+preloadDotEnvSync(["."]);
 
 /**
  * 加载 JSON 配置文件（异步版本）
@@ -415,13 +479,30 @@ export class ConfigManager {
   private readonly managerName: string;
 
   /**
+   * 进程环境只读门面（`get` / `has` 委托给 `@dreamer/runtime-adapter`），与无参 {@link ConfigManager.getEnv} 区分。
+   * 典型用法：`manager.env.get("DB_HOST")`。
+   */
+  private readonly _processEnvApi = {
+    /**
+     * 读取进程环境变量（与 {@link ConfigManager.getEnv} 传入 `key` 时语义相同）。
+     * @param key 环境变量键名
+     */
+    get: (key: string): string | undefined => readProcessEnv(key),
+    /**
+     * 判断进程环境是否已定义该键（含值为空字符串的情况）。
+     * @param key 环境变量键名
+     */
+    has: (key: string): boolean => hasEnv(key),
+  };
+
+  /**
    * 创建 ConfigManager 实例
    * @param options 配置选项
    */
   constructor(options: ConfigManagerOptions = {}) {
-    const env = options.env || getEnv("DENO_ENV") ||
-      getEnv("BUN_ENV") ||
-      getEnv("NODE_ENV") || "dev";
+    const env = options.env || readProcessEnv("DENO_ENV") ||
+      readProcessEnv("BUN_ENV") ||
+      readProcessEnv("NODE_ENV") || "dev";
     this.options = {
       directories: options.directories || ["./config"],
       env,
@@ -473,10 +554,27 @@ export class ConfigManager {
   }
 
   /**
-   * 获取当前环境
+   * 只读访问进程环境变量（`env.get` / `env.has`），便于与「配置环境名」API 集中在同一实例上。
    */
-  getEnv(): string {
-    return this.options.env;
+  get env(): {
+    get(key: string): string | undefined;
+    has(key: string): boolean;
+  } {
+    return this._processEnvApi;
+  }
+
+  /**
+   * 无参数：返回当前**配置环境名**（构造时的 `options.env`，如 dev/test/prod 原始字符串）。
+   * 有参数：从**进程环境**读取键值（委托 `@dreamer/runtime-adapter` 的 `getEnv`）。
+   * @param key 可选；传入时为进程环境变量键名
+   */
+  getEnv(): string;
+  getEnv(key: string): string | undefined;
+  getEnv(key?: string): string | undefined {
+    if (key === undefined) {
+      return this.options.env;
+    }
+    return readProcessEnv(key);
   }
 
   /**
@@ -552,11 +650,12 @@ export class ConfigManager {
       }
     }
 
-    // 2. 加载 .env 分层文件（.env、.env.{dev|test|prod}、可选 .env.{原始 env 小写}）
-    for (const dir of this.options.directories) {
-      const envLayer = collectDotEnvLayersSync(dir, this.options.env);
-      mergedConfig = deepMerge(mergedConfig, envLayer);
-    }
+    // 2. 加载 .env 分层文件（多目录合并规则与 {@link preloadDotEnvSync} 一致）
+    const dotFlat = mergeDotEnvDirectoriesPreserveNonEmpty(
+      this.options.directories,
+      this.options.env,
+    );
+    mergedConfig = deepMerge(mergedConfig, dotFlat);
 
     // 3. 环境变量覆盖（最高优先级）
     const envVars = loadEnvConfig(this.options.envPrefix);
@@ -616,16 +715,11 @@ export class ConfigManager {
    * 加载 .env 文件
    */
   private async loadEnvFiles(): Promise<Record<string, unknown>> {
-    const env: Record<string, unknown> = {};
-
-    for (const dir of this.options.directories) {
-      const layer = await collectDotEnvLayersAsync(dir, this.options.env);
-      for (const [k, v] of Object.entries(layer)) {
-        env[k] = v;
-      }
-    }
-
-    return env;
+    const flat = await mergeDotEnvDirectoriesPreserveNonEmptyAsync(
+      this.options.directories,
+      this.options.env,
+    );
+    return { ...flat };
   }
 
   /**

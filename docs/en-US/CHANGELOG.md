@@ -10,6 +10,31 @@ and this project adheres to
 
 ---
 
+## [1.0.3] - 2026-04-17
+
+### Added
+
+- **Root re-exports**: `deleteEnv`, `getEnv`, `hasEnv`, and `setEnv` are
+  re-exported from `@dreamer/runtime-adapter` at the package entry so callers
+  can depend on `@dreamer/config` alone for process env access (still no
+  automatic `.env` reads from these helpers).
+- **Import-time preload**: The package entry runs `preloadDotEnvSync(["."])`
+  once when `@dreamer/config` is first loaded, merging layered `.env` files from
+  the current working directory into the process (same rules as manual preload).
+
+### Changed
+
+- **`preloadDotEnvSync`** (`applyToProcess` default): Merged values are applied
+  when the process has no value for a key or only a blank/whitespace value, so
+  empty shell exports (e.g. `DB_PASS=`) do not block values from `.env`.
+- **Multi-directory `.env` merge**: When merging several directories, a later
+  directory’s empty string for a key no longer overwrites a non-empty value from
+  an earlier directory.
+- **`PreloadDotEnvOptions`**: Clarified `override` vs default vacant-key
+  behavior in comments.
+
+---
+
 ## [1.0.2] - 2026-04-16
 
 ### Added

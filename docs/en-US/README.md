@@ -86,6 +86,26 @@ bunx jsr add @dreamer/config
 
 ---
 
+## Process environment (re-exports)
+
+This package re-exports `getEnv`, `hasEnv`, `setEnv`, and `deleteEnv` from
+`@dreamer/runtime-adapter` with identical behavior.
+
+**Important:** `getEnv` does **not** read `.env` files from disk. Layered files
+(`.env`, `.env.dev`, `.env.prod`, etc.) are merged by **`preloadDotEnvSync`** or
+**`ConfigManager.load` / `loadSync`**, which (by default) write merged keys into
+the process environment; only then does `getEnv("DB_HOST")` see those values.
+You do not need a custom `getEnv` implementation to read `.env` layers.
+
+```typescript
+import { getEnv, preloadDotEnvSync } from "jsr:@dreamer/config";
+
+preloadDotEnvSync([".", "./config"], { env: "dev" });
+console.log(getEnv("MY_KEY"));
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Basic Usage
@@ -281,20 +301,21 @@ Config manager class.
 
 **Methods**:
 
-| Method                                   | Description                                         |
-| ---------------------------------------- | --------------------------------------------------- |
-| `get(key, defaultValue?)`                | Get config value (dot path, e.g. `"database.host"`) |
-| `set(key, value)`                        | Set config value                                    |
-| `has(key)`                               | Check if key exists                                 |
-| `getAll()`                               | Get all config                                      |
-| `getEnv()`                               | Get current environment                             |
-| `load()`                                 | Async load (TypeScript module, JSON, .env)          |
-| `loadSync()`                             | Sync load (JSON and .env only, no TS modules)       |
-| `stopWatching()`                         | Stop file watching                                  |
-| `getName()`                              | Get manager name                                    |
-| `setContainer(container)`                | Set service container                               |
-| `getContainer()`                         | Get service container                               |
-| `static fromContainer(container, name?)` | Get ConfigManager from container                    |
+| Method                                   | Description                                                                                                                              |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `get(key, defaultValue?)`                | Get config value (dot path, e.g. `"database.host"`)                                                                                      |
+| `set(key, value)`                        | Set config value                                                                                                                         |
+| `has(key)`                               | Check if key exists                                                                                                                      |
+| `getAll()`                               | Get all config                                                                                                                           |
+| `getEnv()`                               | No-arg: **config environment name** (`options.env`); `getEnv("KEY")`: read **process** env (same as `@dreamer/runtime-adapter` `getEnv`) |
+| `env`                                    | Read-only `{ get("KEY"), has("KEY") }` for process env, same as above                                                                    |
+| `load()`                                 | Async load (TypeScript module, JSON, .env)                                                                                               |
+| `loadSync()`                             | Sync load (JSON and .env only, no TS modules)                                                                                            |
+| `stopWatching()`                         | Stop file watching                                                                                                                       |
+| `getName()`                              | Get manager name                                                                                                                         |
+| `setContainer(container)`                | Set service container                                                                                                                    |
+| `getContainer()`                         | Get service container                                                                                                                    |
+| `static fromContainer(container, name?)` | Get ConfigManager from container                                                                                                         |
 
 > **dweb integration: `load()` vs `config/main.ts` order**\
 > The table is correct: `load()` **does** load `.env` from your config
@@ -383,8 +404,9 @@ get/set, env prefix, deep merge, hot reload, and `ServiceContainer` integration.
 
 Full history: [CHANGELOG.md](./CHANGELOG.md).
 
-**Latest (v1.0.2)**: Layered `.env` / `preloadDotEnvSync`; dweb preloads env
-before `main.ts`.
+**Latest (v1.0.3)**: Root env re-exports; import-time
+`preloadDotEnvSync(["."])`; multi-dir `.env` empty does not wipe earlier
+non-empty; vacant keys filled from `.env`.
 
 ---
 

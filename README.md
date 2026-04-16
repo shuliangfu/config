@@ -5,7 +5,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/config)](https://jsr.io/@dreamer/config)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests: 52 passed](https://img.shields.io/badge/Tests-52%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests: 54 passed](https://img.shields.io/badge/Tests-54%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 📖 **Docs**: [English](./docs/en-US/README.md) |
 [中文 (Chinese)](./docs/zh-CN/README.md)
@@ -13,13 +13,14 @@
 **Changelog**: [en-US](./docs/en-US/CHANGELOG.md) |
 [zh-CN](./docs/zh-CN/CHANGELOG.md)
 
-**Latest (v1.0.2)**: Layered `.env` / `preloadDotEnvSync`; dweb preloads env
-before `main.ts`.
+**Latest (v1.0.3)**: Root env re-exports; import-time
+`preloadDotEnvSync(["."])`; multi-dir `.env` merge keeps non-empty over later
+empty; vacant process keys filled from merged `.env`.
 
 ### Test report summary
 
-`deno test -A tests/mod.test.ts`：**52** passed, **0**
-failed（含框架收尾步骤；业务用例 **50** 条见
+`deno test -A tests/mod.test.ts`：**54** passed, **0**
+failed（含框架收尾步骤；业务用例 **52** 条见
 [TEST_REPORT（中文）](./docs/zh-CN/TEST_REPORT.md) /
 [English](./docs/en-US/TEST_REPORT.md) 中的分节与说明）。覆盖
 `load`/`loadSync`、分层 `.env`、`preloadDotEnvSync`、读写合并、热重载与
