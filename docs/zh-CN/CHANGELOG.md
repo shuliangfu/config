@@ -9,6 +9,28 @@
 
 ---
 
+## [1.0.3] - 2026-04-17
+
+### 新增
+
+- **包根再导出**：在包入口再导出 `deleteEnv`、`getEnv`、`hasEnv`、`setEnv`（来自
+  `@dreamer/runtime-adapter`），便于只依赖本包访问进程环境（这些 API
+  仍**不会**自动读磁盘 `.env`）。
+- **首次 import 预热**：加载 `@dreamer/config` 入口时执行一次
+  `preloadDotEnvSync(["."])`，按与手动调用相同的规则将 cwd 下分层 `.env`
+  合并进进程。
+
+### 变更
+
+- **`preloadDotEnvSync`**（默认
+  `applyToProcess`）：进程中该键未定义或仅空白时，仍用合并结果写入，避免 shell
+  里空导出占位导致无法注入 `.env` 非空值。
+- **多目录 `.env`
+  合并**：后序目录中某键为空字符串时，不再覆盖先序目录已合并出的非空值。
+- **`PreloadDotEnvOptions`**：注释中明确 `override` 与默认「仅填补空位」的差异。
+
+---
+
 ## [1.0.2] - 2026-04-16
 
 ### 新增

@@ -19,8 +19,8 @@
 
 | Metric             | Value                                          |
 | ------------------ | ---------------------------------------------- |
-| **Total tests**    | 52                                             |
-| **Passed**         | 52                                             |
+| **Total tests**    | 54                                             |
+| **Passed**         | 54                                             |
 | **Failed**         | 0                                              |
 | **Pass rate**      | 100%                                           |
 | **Execution time** | On the order of tens of ms (machine-dependent) |
@@ -29,7 +29,7 @@
 
 | Test file     | Tests | Passed | Failed | Status    |
 | ------------- | ----- | ------ | ------ | --------- |
-| `mod.test.ts` | 52    | 52     | 0      | ✅ Passed |
+| `mod.test.ts` | 54    | 54     | 0      | ✅ Passed |
 
 ---
 
@@ -82,11 +82,12 @@
 | ----------------------------- | ------ |
 | Should check if config exists | ✅     |
 
-### 7. getEnv — 1 test
+### 7. getEnv / env — 2 tests
 
-| Scenario                          | Status |
-| --------------------------------- | ------ |
-| Should return current environment | ✅     |
+| Scenario                                                          | Status |
+| ----------------------------------------------------------------- | ------ |
+| Should return current config environment name (`getEnv()` no-arg) | ✅     |
+| `getEnv(key)`, `env.get`, `env.has` should read process env       | ✅     |
 
 ### 8. Multi-directory config — 1 test
 
@@ -162,18 +163,19 @@
 | Should register in service container | ✅     |
 | Should support load and get config   | ✅     |
 
-### 17. Sync env API (layering & preload) — 3 tests
+### 17. Sync env API (layering & preload) — 4 tests
 
-| Scenario                                                                          | Status |
-| --------------------------------------------------------------------------------- | ------ |
-| `resolveConfigEnvFileSuffix` should normalize common values                       | ✅     |
-| `collectDotEnvLayersSync` should overlay `.env` / `.env.dev` / `.env.development` | ✅     |
-| `preloadDotEnvSync` should write unset keys when `applyToProcess`                 | ✅     |
+| Scenario                                                                               | Status |
+| -------------------------------------------------------------------------------------- | ------ |
+| `resolveConfigEnvFileSuffix` should normalize common values                            | ✅     |
+| `collectDotEnvLayersSync` should overlay `.env` / `.env.dev` / `.env.development`      | ✅     |
+| `preloadDotEnvSync` should write unset keys when `applyToProcess`                      | ✅     |
+| Multi-dir `preloadDotEnvSync` should not let later empty string wipe earlier non-empty | ✅     |
 
 ---
 
-**Aligning with `deno test` totals:** The tables above list **50** business
-`it()` cases. The runner reports **52 passed** because the framework also
+**Aligning with `deno test` totals:** The tables above list **52** business
+`it()` cases. The runner reports **54 passed** because the framework also
 registers teardown steps (e.g. `ConfigManager (afterAll)`, `@dreamer/test`
 cleanup), which matches a normal `deno test -A tests/mod.test.ts` run.
 
@@ -184,7 +186,7 @@ cleanup), which matches a normal `deno test -A tests/mod.test.ts` run.
 | Capability                                                                   | Status |
 | ---------------------------------------------------------------------------- | ------ |
 | `ConfigManager.load` / `loadSync`                                            | ✅     |
-| `get` / `set` / `getAll` / `has` / `getEnv`                                  | ✅     |
+| `get` / `set` / `getAll` / `has` / `getEnv` / `env`                          | ✅     |
 | Multi-dir merge, deep merge, env prefix                                      | ✅     |
 | Layered `.env` (`.env`, `.env.{dev                                           | test   |
 | `preloadDotEnvSync`, `resolveConfigEnvFileSuffix`, `collectDotEnvLayersSync` | ✅     |
@@ -194,7 +196,7 @@ cleanup), which matches a normal `deno test -A tests/mod.test.ts` run.
 
 ## 📝 Conclusion
 
-All **`deno test` totals (52)** for `@dreamer/config` pass — **50** business
+All **`deno test` totals (54)** for `@dreamer/config` pass — **52** business
 `it()` cases are listed in the sections above, plus **2** framework teardown
 steps. Coverage includes async/sync loading, layered `.env`, optional process
 preload, get/set/merge, hot reload, and `@dreamer/service` integration.
@@ -206,6 +208,6 @@ Assertions and edge cases are defined in `tests/mod.test.ts`.
 
 **Pass rate: 100%** ✅
 
-_52 tests | All passed_
+_54 tests | All passed_
 
 </div>

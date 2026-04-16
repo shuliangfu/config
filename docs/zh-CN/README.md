@@ -85,6 +85,25 @@ bunx jsr add @dreamer/config
 
 ---
 
+## 进程环境变量（再导出）
+
+本包从 `@dreamer/runtime-adapter` 再导出
+`getEnv`、`hasEnv`、`setEnv`、`deleteEnv`，语义与直接使用 adapter 相同。
+
+**重要**：`getEnv` **不会**读取磁盘上的 `.env`。`.env`、`.env.dev`、`.env.prod`
+等分层文件由 **`preloadDotEnvSync`** 或 **`ConfigManager.load` / `loadSync`**
+合并并（在 `applyToProcess` / 默认行为下）写入进程后，`getEnv("DB_HOST")`
+才能读到合并后的值；无需、也不应为此「重写」`getEnv` 去读文件。
+
+```typescript
+import { getEnv, preloadDotEnvSync } from "jsr:@dreamer/config";
+
+preloadDotEnvSync([".", "./config"], { env: "dev" });
+console.log(getEnv("MY_KEY"));
+```
+
+---
+
 ## 🚀 快速开始
 
 ### 基础用法
@@ -280,20 +299,21 @@ container.registerSingleton("databaseService", () => {
 
 **方法**：
 
-| 方法                                     | 说明                                                    |
-| ---------------------------------------- | ------------------------------------------------------- |
-| `get(key, defaultValue?)`                | 获取配置值（支持点号路径，如 `"database.host"`）        |
-| `set(key, value)`                        | 设置配置值                                              |
-| `has(key)`                               | 检查配置键是否存在                                      |
-| `getAll()`                               | 获取所有配置                                            |
-| `getEnv()`                               | 获取当前环境                                            |
-| `load()`                                 | 异步加载配置文件（支持 TypeScript 模块、JSON、.env）    |
-| `loadSync()`                             | 同步加载配置文件（仅支持 JSON 和 .env，不支持 TS 模块） |
-| `stopWatching()`                         | 停止文件监听                                            |
-| `getName()`                              | 获取管理器名称                                          |
-| `setContainer(container)`                | 设置服务容器                                            |
-| `getContainer()`                         | 获取服务容器                                            |
-| `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                       |
+| 方法                                     | 说明                                                                                                                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `get(key, defaultValue?)`                | 获取配置值（支持点号路径，如 `"database.host"`）                                                                                 |
+| `set(key, value)`                        | 设置配置值                                                                                                                       |
+| `has(key)`                               | 检查配置键是否存在                                                                                                               |
+| `getAll()`                               | 获取所有配置                                                                                                                     |
+| `getEnv()`                               | 无参：返回**配置环境名**（`options.env`）；有参 `getEnv("KEY")`：读**进程**环境变量（同 `@dreamer/runtime-adapter` 的 `getEnv`） |
+| `env`                                    | 只读对象：`env.get("KEY")`、`env.has("KEY")`，同上，便于与配置 API 同实例使用                                                    |
+| `load()`                                 | 异步加载配置文件（支持 TypeScript 模块、JSON、.env）                                                                             |
+| `loadSync()`                             | 同步加载配置文件（仅支持 JSON 和 .env，不支持 TS 模块）                                                                          |
+| `stopWatching()`                         | 停止文件监听                                                                                                                     |
+| `getName()`                              | 获取管理器名称                                                                                                                   |
+| `setContainer(container)`                | 设置服务容器                                                                                                                     |
+| `getContainer()`                         | 获取服务容器                                                                                                                     |
+| `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                                                                                                |
 
 > **与 @dreamer/dweb 集成：`load()` 与 `config/main.ts` 谁先执行？**\
 > 上表所述无误——`load()` **会**异步加载配置目录下的 TypeScript / JSON / `.env`
@@ -378,8 +398,9 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 
 完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
 
-**最新 (v1.0.2)**：`.env` / `.env.{dev|test|prod}` / `.env.{原始环境}`
-分层合并；`preloadDotEnvSync`；dweb 启动前预热进程环境。
+**最新 (v1.0.3)**：包根再导出进程环境 API；首次 import 时
+`preloadDotEnvSync(["."])`；
+多目录合并时空值不冲掉先序非空；进程空位可由合并后的 `.env` 写入。
 
 ---
 
