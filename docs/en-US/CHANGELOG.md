@@ -10,6 +10,36 @@ and this project adheres to
 
 ---
 
+## [1.0.2] - 2026-04-16
+
+### Added
+
+- **`preloadDotEnvSync`**: Synchronously merge layered `.env` files from
+  multiple directories and optionally apply values to the process environment
+  (`setEnv`; default does not override existing keys).
+- **`collectDotEnvLayersSync`**: Read `.env`, `.env.{dev|test|prod}`, and
+  optional `.env.{lowercased raw env}` for one directory without mutating the
+  process.
+- **`resolveConfigEnvFileSuffix`**: Map common `DENO_ENV` / `NODE_ENV` values to
+  `dev` | `test` | `prod` for the middle `.env` layer (e.g. `development` →
+  `.env.dev`).
+- **`PreloadDotEnvOptions`** and **`ConfigEnvFileSuffix`** export types for the
+  new APIs.
+
+### Changed
+
+- **`ConfigManager.load` / `loadSync` / `loadEnvFiles`**: `.env` loading now
+  uses the same three-layer merge as `collectDotEnvLayersSync` (base, mapped
+  suffix, raw env file when distinct).
+- **Hot reload default**: Enabled when the resolved env file suffix is `dev` (so
+  `development` still enables hot reload by default).
+- **Constructor**: Also considers `BUN_ENV` when resolving the active
+  environment string.
+- **`deno.json`**: `nodeModulesDir: "auto"` for local test dependency
+  resolution.
+
+---
+
 ## [1.0.1] - 2026-02-18
 
 ### Changed

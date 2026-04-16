@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/config",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "Apache-2.0",
   "exports": {
     ".": "./src/mod.ts",
@@ -8,8 +8,8 @@
   },
   "publish": {
     "include": [
-      "src/mod.ts",
-      "src/client/mod.ts",
+      "src/**/*.ts",
+      "src/**/*.json",
       "LICENSE",
       "NOTICE",
       "README.md"
@@ -37,6 +37,7 @@
   "imports": {
     "@dreamer/service": "jsr:@dreamer/service@^1.0.0",
     "@dreamer/test": "jsr:@dreamer/test@^1.0.10",
-    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.15"
-  }
+    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.18"
+  },
+  "nodeModulesDir": "auto"
 }

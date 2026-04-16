@@ -13,7 +13,13 @@ import {
 } from "@dreamer/runtime-adapter";
 import { ServiceContainer } from "@dreamer/service";
 import { afterAll, beforeAll, describe, expect, it } from "@dreamer/test";
-import { ConfigManager, createConfigManager } from "../src/mod.ts";
+import {
+  collectDotEnvLayersSync,
+  ConfigManager,
+  createConfigManager,
+  preloadDotEnvSync,
+  resolveConfigEnvFileSuffix,
+} from "../src/mod.ts";
 
 describe("ConfigManager", () => {
   const testDir = join(cwd(), "tests", "data", "test-config");
@@ -315,7 +321,7 @@ describe("ConfigManager", () => {
   });
 
   describe("getEnv", () => {
-    it("应该返回当前环境", async () => {
+    it("应该返回当前环境", () => {
       const manager = new ConfigManager({
         directories: [testDir],
         env: "prod",
@@ -403,6 +409,20 @@ describe("ConfigManager", () => {
       const config = manager.getAll();
       // .env.prod 应该覆盖 .env，APP_NAME 应该为 "prod-env"
       expect(config.APP_NAME).toBe("prod-env");
+    });
+
+    it("env 为 development 时应加载 .env.dev（三档后缀）", async () => {
+      const envDir = join(testDir, "env-development-suffix");
+      await mkdir(envDir, { recursive: true });
+      await writeTextFile(join(envDir, ".env"), "FLAG=base\n");
+      await writeTextFile(join(envDir, ".env.dev"), "FLAG=from-dev-layer\n");
+      const manager = new ConfigManager({
+        directories: [envDir],
+        env: "development",
+        hotReload: false,
+      });
+      await manager.load();
+      expect(manager.get("FLAG")).toBe("from-dev-layer");
     });
 
     it("应该忽略 .env 文件中的注释和空行", async () => {
@@ -860,6 +880,44 @@ describe("ConfigManager", () => {
 
       await manager.load();
       expect(manager.get("app.name")).toBe("test");
+    });
+  });
+
+  describe("resolveConfigEnvFileSuffix / collectDotEnvLayersSync / preloadDotEnvSync", () => {
+    it("resolveConfigEnvFileSuffix 应规范化常见取值", () => {
+      expect(resolveConfigEnvFileSuffix("development")).toBe("dev");
+      expect(resolveConfigEnvFileSuffix("DEV")).toBe("dev");
+      expect(resolveConfigEnvFileSuffix("production")).toBe("prod");
+      expect(resolveConfigEnvFileSuffix("prod")).toBe("prod");
+      expect(resolveConfigEnvFileSuffix("test")).toBe("test");
+    });
+
+    it("collectDotEnvLayersSync 应按 .env、.env.dev、.env.development 顺序覆盖", async () => {
+      const dir = join(testDir, "collect-dotenv-sync");
+      await mkdir(dir, { recursive: true });
+      await writeTextFile(join(dir, ".env"), "X=1\n");
+      await writeTextFile(join(dir, ".env.dev"), "X=2\nY=a\n");
+      await writeTextFile(join(dir, ".env.development"), "Y=b\n");
+      const layers = collectDotEnvLayersSync(dir, "development");
+      expect(layers.X).toBe("2");
+      expect(layers.Y).toBe("b");
+      await remove(dir, { recursive: true }).catch(() => {});
+    });
+
+    it("preloadDotEnvSync 应在 applyToProcess 时写入未占用键", async () => {
+      const dir = join(testDir, "preload-dotenv");
+      await mkdir(dir, { recursive: true });
+      const key = `CFG_PRELOAD_${Date.now()}`;
+      await writeTextFile(join(dir, ".env"), `${key}=preloaded\n`);
+      const { deleteEnv, getEnv } = await import("@dreamer/runtime-adapter");
+      try {
+        deleteEnv(key);
+        preloadDotEnvSync([dir], { env: "dev", applyToProcess: true });
+        expect(getEnv(key)).toBe("preloaded");
+      } finally {
+        deleteEnv(key);
+        await remove(dir, { recursive: true }).catch(() => {});
+      }
     });
   });
 });

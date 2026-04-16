@@ -295,6 +295,34 @@ container.registerSingleton("databaseService", () => {
 | `getContainer()`                         | 获取服务容器                                            |
 | `static fromContainer(container, name?)` | 从服务容器获取 ConfigManager 实例                       |
 
+> **与 @dreamer/dweb 集成：`load()` 与 `config/main.ts` 谁先执行？**\
+> 上表所述无误——`load()` **会**异步加载配置目录下的 TypeScript / JSON / `.env`
+> 并参与合并。\
+> 但在 **dweb** 的 `initializeConfigManager` 中，**会先**动态 `import`
+> `common/config/main.ts` 与各应用的 `config/main.ts`，**然后**才
+> `await configManager.load()`。因此：
+>
+> - **`main.ts` 模块顶层代码**在 `load()` **之前**运行；若 `.env`
+>   里的键**尚未**进入**进程环境**，顶层里用 `getEnv`
+>   也读不到「仅存在于磁盘、等待 `load()` 才进 ConfigManager 内存」的值。
+> - **v1.0.2+**：`loadSync()` / `load()` 会按 **`.env` →
+>   `.env.{dev|test|prod}`**（由 `development`/`production` 等规范化）→
+>   **`.env.{原始环境名小写}`**（如 `.env.development`）分层合并；并导出
+>   **`preloadDotEnvSync`**，在 import `main.ts` **之前**把上述文件同步读入并
+>   **`setEnv` 写入进程**（默认不覆盖已存在的键）。**@dreamer/dweb** 已在
+>   `initializeConfigManager` 开头对仓库根 `"."` 与各配置目录调用
+>   `preloadDotEnvSync`，使顶层 `getEnv` 与合并规则一致。
+> - `load()` 合并进 ConfigManager 的 `.env` 键仍为**顶层扁平键**（如
+>   `DB_HOST`）；`load()` **之后**也可用 `getConfig(container)` 等读取。
+
+### 同步 API：`.env` 分层与 `preloadDotEnvSync`
+
+| 导出                         | 说明                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `resolveConfigEnvFileSuffix` | 将 `development`/`production`/`prod` 等规范为 `dev` \| `test` \| `prod`，用于 `.env.dev` 等文件名 |
+| `collectDotEnvLayersSync`    | 同步读取单个目录下的 `.env` 三层合并结果（不写入进程）                                            |
+| `preloadDotEnvSync`          | 多目录同步合并后可选写入进程；选项含 `env`、`override`、`applyToProcess`                          |
+
 ### ServiceContainer 集成示例
 
 ```typescript
@@ -331,27 +359,18 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 
 ---
 
-## 📊 测试报告
+## 📊 测试报告（摘要）
 
-[![Tests: 47 passed](https://img.shields.io/badge/Tests-47%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests: 52 passed](https://img.shields.io/badge/Tests-52%20passed-brightgreen)](./TEST_REPORT.md)
 
-| 测试类别                     | 测试数 | 状态        |
-| ---------------------------- | ------ | ----------- |
-| load                         | 2      | ✅ 通过     |
-| loadSync                     | 8      | ✅ 通过     |
-| get/set/has/getAll           | 7      | ✅ 通过     |
-| getEnv                       | 1      | ✅ 通过     |
-| 多目录配置                   | 1      | ✅ 通过     |
-| .env 文件                    | 7      | ✅ 通过     |
-| 环境变量                     | 2      | ✅ 通过     |
-| 配置合并                     | 1      | ✅ 通过     |
-| 热重载                       | 2      | ✅ 通过     |
-| 边界情况                     | 3      | ✅ 通过     |
-| ServiceContainer 集成        | 6      | ✅ 通过     |
-| createConfigManager 工厂函数 | 5      | ✅ 通过     |
-| **总计**                     | **47** | ✅ **100%** |
+在包根执行 `deno test -A tests/mod.test.ts`：**52** 条通过、**0** 失败、通过率
+**100%**（其中 **50** 条为 `tests/mod.test.ts` 内业务 `it()`，**2** 条为
+`@dreamer/test` / 根 `describe` 注册的收尾步骤，与 `deno test`
+汇总一致）。覆盖异步/同步加载、`.env` 分层与
+`preloadDotEnvSync`、`get`/`set`、环境变量前缀、深度合并、热重载及
+`ServiceContainer` 集成。
 
-详细测试报告请查看 [TEST_REPORT.md](./TEST_REPORT.md)。
+**完整分节、用例表与 API 覆盖摘要**见 [TEST_REPORT.md](./TEST_REPORT.md)。
 
 ---
 
@@ -359,7 +378,8 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 
 完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
 
-**最新 (v1.0.1)**：文档拆分为 en-US/zh-CN；许可证 Apache-2.0。
+**最新 (v1.0.2)**：`.env` / `.env.{dev|test|prod}` / `.env.{原始环境}`
+分层合并；`preloadDotEnvSync`；dweb 启动前预热进程环境。
 
 ---
 
