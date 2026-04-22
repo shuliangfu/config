@@ -912,6 +912,8 @@ describe("ConfigManager", () => {
       expect(resolveConfigEnvFileSuffix("DEV")).toBe("dev");
       expect(resolveConfigEnvFileSuffix("production")).toBe("prod");
       expect(resolveConfigEnvFileSuffix("prod")).toBe("prod");
+      expect(resolveConfigEnvFileSuffix("build")).toBe("prod");
+      expect(resolveConfigEnvFileSuffix("start")).toBe("prod");
       expect(resolveConfigEnvFileSuffix("test")).toBe("test");
     });
 

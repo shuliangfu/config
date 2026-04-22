@@ -10,6 +10,20 @@ and this project adheres to
 
 ---
 
+## [1.0.4] - 2026-04-22
+
+### Changed
+
+- **Environment variables**: Default env name resolution for `preloadDotEnvSync`
+  and `ConfigManager` uses **`RUNTIME_ENV`** only (falls back to `dev`); no
+  longer auto-reads `DENO_ENV`, `NODE_ENV`, or `BUN_ENV`, aligned with
+  @dreamer/dweb.
+- **`resolveConfigEnvFileSuffix`**: Maps `RUNTIME_ENV` values **`build`** and
+  **`start`** to the **`prod`** tier (`.env.prod`), with optional `.env.build` /
+  `.env.start` exact-name layers unchanged.
+
+---
+
 ## [1.0.3] - 2026-04-17
 
 ### Added

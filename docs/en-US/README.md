@@ -259,8 +259,8 @@ const config = createConfig({
     "./config/modules",
     "./config/local",
   ],
-  env: process.env.DENO_ENV || "dev",
-  watch: process.env.DENO_ENV === "dev",
+  env: process.env.RUNTIME_ENV || "dev",
+  watch: process.env.RUNTIME_ENV === "dev",
 });
 
 // Load config
@@ -404,9 +404,9 @@ get/set, env prefix, deep merge, hot reload, and `ServiceContainer` integration.
 
 Full history: [CHANGELOG.md](./CHANGELOG.md).
 
-**Latest (v1.0.3)**: Root env re-exports; import-time
-`preloadDotEnvSync(["."])`; multi-dir `.env` empty does not wipe earlier
-non-empty; vacant keys filled from `.env`.
+**Latest (v1.0.4)**: Default profile from **`RUNTIME_ENV`** only (fallback
+`dev`); no auto-read of `DENO_ENV` / `NODE_ENV` / `BUN_ENV`; `build`/`start` map
+to `.env.prod` tier; optional `.env.build` / `.env.start` layers.
 
 ---
 
