@@ -4,7 +4,7 @@
  * 配置管理库，提供统一的配置抽象层，支持服务端配置文件管理。
  *
  * 特性：
- * - 多环境配置（dev、test、prod）
+ * - 多环境配置（dev、test、prod；与进程 `RUNTIME_ENV` dev/build/start 对齐）
  * - 多目录支持（按优先级合并）
  * - 配置文件加载（TypeScript 模块或 JSON）
  * - .env 文件支持（同步合并 `.env`、`.env.{dev|test|prod}`、可选 `.env.{原始环境名}`；`preloadDotEnvSync` 可写入进程环境）
@@ -48,7 +48,10 @@ export interface ConfigManagerOptions {
   name?: string;
   /** 配置目录（可以是多个，按顺序加载，后面的覆盖前面的） */
   directories?: string[];
-  /** 环境（dev、test、prod） */
+  /**
+   * 环境名；未传时仅从进程 **`RUNTIME_ENV`** 推断（与 dweb 的 dev/build/start 一致）；未设置则默认为 `dev`。
+   * 亦可显式传 `dev` / `test` / `prod` 等，供 `resolveConfigEnvFileSuffix` 选 `.env.*`。
+   */
   env?: string;
   /** 环境变量前缀（只读取带此前缀的环境变量） */
   envPrefix?: string;
@@ -166,15 +169,21 @@ function loadEnvFileSync(filePath: string): Record<string, string> {
 export type ConfigEnvFileSuffix = "dev" | "test" | "prod";
 
 /**
- * 将常见 `DENO_ENV` / `NODE_ENV` / `BUN_ENV` 取值规范为三档文件名后缀，用于选择 `.env.dev`、`.env.test`、`.env.prod`。
- * 例如 `development`、`dev` → `dev`；`production`、`prod` → `prod`。
+ * 将进程环境名规范为三档 `.env` 文件名后缀（`.env.dev` / `.env.test` / `.env.prod`）。
  *
- * @param raw 环境名字符串（通常来自配置选项或环境变量）
+ * - 与 @dreamer/dweb 一致：`RUNTIME_ENV=build` | `start` 均映射为 `prod`（加载 `.env.prod`，并可再叠加 `.env.build` / `.env.start`，见 {@link collectDotEnvLayersSync} 的「原始名」层）。
+ * - 调用方仍可通过 `options.env` 传入任意原始字符串（例如自行把 `NODE_ENV` 映射后再传入）；本包**不再**自动读取 `NODE_ENV`。
+ *
+ * @param raw 环境名字符串（通常来自 `options.env` 或进程 `RUNTIME_ENV`，或由调用方自行构造）
  * @returns `dev` | `test` | `prod`
  */
 export function resolveConfigEnvFileSuffix(raw: string): ConfigEnvFileSuffix {
   const s = raw.trim().toLowerCase();
-  if (s === "production" || s === "prod") return "prod";
+  if (
+    s === "production" || s === "prod" || s === "build" || s === "start"
+  ) {
+    return "prod";
+  }
   if (s === "test") return "test";
   return "dev";
 }
@@ -242,7 +251,7 @@ async function collectDotEnvLayersAsync(
 
 /** {@link preloadDotEnvSync} 的选项 */
 export interface PreloadDotEnvOptions {
-  /** 环境字符串；不传则从 `DENO_ENV`、`NODE_ENV`、`BUN_ENV` 依次读取，皆无则 `dev` */
+  /** 环境字符串；不传则仅读取进程 `RUNTIME_ENV`，未设置则 `dev` */
   env?: string;
   /**
    * 为 `true` 时无条件用合并后的 `.env` 值覆盖进程中的同名变量。
@@ -336,10 +345,7 @@ export function preloadDotEnvSync(
   const envRaw =
     (options.env !== undefined && String(options.env).trim() !== "")
       ? String(options.env).trim()
-      : readProcessEnv("DENO_ENV") ||
-        readProcessEnv("NODE_ENV") ||
-        readProcessEnv("BUN_ENV") ||
-        "dev";
+      : readProcessEnv("RUNTIME_ENV") || "dev";
 
   const ordered = dedupeDirectoriesPreserveOrder(directories);
   const merged = mergeDotEnvDirectoriesPreserveNonEmpty(ordered, envRaw);
@@ -500,9 +506,7 @@ export class ConfigManager {
    * @param options 配置选项
    */
   constructor(options: ConfigManagerOptions = {}) {
-    const env = options.env || readProcessEnv("DENO_ENV") ||
-      readProcessEnv("BUN_ENV") ||
-      readProcessEnv("NODE_ENV") || "dev";
+    const env = options.env || readProcessEnv("RUNTIME_ENV") || "dev";
     this.options = {
       directories: options.directories || ["./config"],
       env,

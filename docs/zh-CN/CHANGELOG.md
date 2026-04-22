@@ -9,6 +9,19 @@
 
 ---
 
+## [1.0.4] - 2026-04-22
+
+### 变更
+
+- **环境变量**：`preloadDotEnvSync` 默认环境名、`ConfigManager`
+  构造时的进程推断仅 **`RUNTIME_ENV`**（未设置则 `dev`）；不再自动读取
+  `DENO_ENV`、`NODE_ENV`、`BUN_ENV`，与 @dreamer/dweb 一致。
+- **`resolveConfigEnvFileSuffix`**：`RUNTIME_ENV` 的 `build`、`start`
+  映射为三档后缀 **`prod`**（加载 `.env.prod`，并可继续叠加 `.env.build` /
+  `.env.start`）。
+
+---
+
 ## [1.0.3] - 2026-04-17
 
 ### 新增

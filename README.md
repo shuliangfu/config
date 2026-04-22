@@ -13,9 +13,10 @@
 **Changelog**: [en-US](./docs/en-US/CHANGELOG.md) |
 [zh-CN](./docs/zh-CN/CHANGELOG.md)
 
-**Latest (v1.0.3)**: Root env re-exports; import-time
-`preloadDotEnvSync(["."])`; multi-dir `.env` merge keeps non-empty over later
-empty; vacant process keys filled from merged `.env`.
+**Latest (v1.0.4)** — **Changed**: Default profile uses **`RUNTIME_ENV`** only
+(fallback `dev`); no auto-read of `DENO_ENV` / `NODE_ENV` / `BUN_ENV`;
+`build`/`start` map to `.env.prod` tier with optional `.env.build`/`.env.start`.
+See [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ### Test report summary
 

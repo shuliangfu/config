@@ -257,8 +257,8 @@ const config = createConfig({
     "./config/modules",
     "./config/local",
   ],
-  env: process.env.DENO_ENV || "dev",
-  watch: process.env.DENO_ENV === "dev",
+  env: process.env.RUNTIME_ENV || "dev",
+  watch: process.env.RUNTIME_ENV === "dev",
 });
 
 // 加载配置
@@ -398,9 +398,9 @@ const sameManager = ConfigManager.fromContainer(container, "main");
 
 完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
 
-**最新 (v1.0.3)**：包根再导出进程环境 API；首次 import 时
-`preloadDotEnvSync(["."])`；
-多目录合并时空值不冲掉先序非空；进程空位可由合并后的 `.env` 写入。
+**最新 (v1.0.4)**：默认环境名仅根据 **`RUNTIME_ENV`**（未设则
+`dev`）；不再自动读 `DENO_ENV` / `NODE_ENV` / `BUN_ENV`；`build`/`start` 映射到
+`.env.prod` 档，可再叠加 `.env.build` / `.env.start`。
 
 ---
 
