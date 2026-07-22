@@ -10,6 +10,42 @@ and this project adheres to
 
 ---
 
+## [1.1.0] - 2026-07-23
+
+### Added
+
+- **Node.js compatibility**: Configuration loading now runs on Node 22+ —
+  `src/mod.ts` is pure logic (no `Deno.*`, no `IS_NODE` branch, no i18n locale);
+  file/env operations go through `@dreamer/runtime-adapter` v1.2.2 and
+  service-container integration through `@dreamer/service` v1.1.0 (both
+  Node-supported).
+- **Node.js test infra**: Added `tsconfig.json`, `ci.yml` (9-job: 3 Deno v2.9 +
+  3 Bun + 3 Node 22); `test:node` driven by `tsx --test --test-force-exit`;
+  Deno/Bun/Node share the same `tests/*.test.ts` suite.
+
+### Changed
+
+- **src/client/mod.ts**: `pollTimer` type changed from `number | null` to
+  `ReturnType<typeof setInterval> | null` (Deno/Bun return `number`, Node returns
+  `NodeJS.Timeout` — unified cross-runtime type).
+- **tests/mod.test.ts**: Environment-variable setup in the variable-reference
+  test replaced `IS_DENO`/`IS_BUN` manual `globalThis` branching with
+  runtime-adapter's `setEnv`/`deleteEnv` (the original lacked a Node branch — on
+  Node, `TEST_BASE_URL` was never set, so `${TEST_BASE_URL}` in `.env` did not
+  expand and the assertion failed).
+- **Dependencies**: `@dreamer/service` ^1.1.0, `@dreamer/runtime-adapter` ^1.2.2,
+  `@dreamer/test` ^1.2.3.
+- **CI**: Deno bumped to v2.9; publish.yml changed to tags-only trigger
+  (previously main-branch push also triggered).
+- **Publish**: `jsr publish` no longer uses `--no-check` (stricter release gate).
+
+### Compatibility
+
+- Deno 2.9+ / Bun 1.3+ / Node.js 22+
+- Browser (for `@dreamer/config/client`)
+
+---
+
 ## [1.0.4] - 2026-04-22
 
 ### Changed

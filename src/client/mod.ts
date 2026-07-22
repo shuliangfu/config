@@ -136,7 +136,10 @@ export class ConfigManager {
   private config: Record<string, unknown> = {};
   private cacheKey: string;
   private cacheExpiry: number = 0;
-  private pollTimer: number | null = null;
+  // 【Why】跨运行时定时器句柄：Deno/Bun 的 setInterval 返回 number，
+  //        Node 返回 NodeJS.Timeout。ReturnType<typeof setInterval> 在各运行时
+  //        解析为对应类型，避免 Node 下 Timeout 不可赋给 number 的类型错误。
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
   private storageListener: ((e: Event) => void) | null = null;
 
   constructor(options: ConfigManagerOptions = {}) {

@@ -9,6 +9,40 @@
 
 ---
 
+## [1.1.0] - 2026-07-23
+
+### 新增
+
+- **Node.js 兼容**：配置加载现可在 Node 22+ 运行——`src/mod.ts` 为纯逻辑（无
+  `Deno.*`、无 `IS_NODE` 分支、无 i18n locale），文件/环境操作经
+  `@dreamer/runtime-adapter` v1.2.2、服务容器集成经 `@dreamer/service` v1.1.0
+  支持 Node。
+- **Node.js 测试基建**：新增 `tsconfig.json`、`ci.yml`（9-job：3 Deno v2.9 +
+  3 Bun + 3 Node 22），`test:node` 由 `tsx --test --test-force-exit` 驱动；
+  Deno/Bun/Node 共享同一套 `tests/*.test.ts`。
+
+### 变更
+
+- **src/client/mod.ts**：`pollTimer` 类型由 `number | null` 改为
+  `ReturnType<typeof setInterval> | null`（Deno/Bun 返回 number、Node 返回
+  `NodeJS.Timeout`，跨运行时类型统一）。
+- **tests/mod.test.ts**：变量引用测试的环境变量设置由 `IS_DENO`/`IS_BUN`
+  手动 `globalThis` 分支改为 runtime-adapter 的 `setEnv`/`deleteEnv`（原实现缺
+  Node 分支，Node 下 `TEST_BASE_URL` 不会被设置，`.env` 中
+  `${TEST_BASE_URL}` 不展开致断言失败）。
+- **依赖**：`@dreamer/service` ^1.1.0、`@dreamer/runtime-adapter` ^1.2.2、
+  `@dreamer/test` ^1.2.3。
+- **CI**：Deno 升至 v2.9；publish.yml 改为仅 tags 触发（原先 main 分支 push
+  也会触发）。
+- **发布**：`jsr publish` 不再使用 `--no-check`（更严格的发布门禁）。
+
+### 兼容性
+
+- Deno 2.9+ / Bun 1.3+ / Node.js 22+
+- 浏览器（用于 `@dreamer/config/client`）
+
+---
+
 ## [1.0.4] - 2026-04-22
 
 ### 变更

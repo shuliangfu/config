@@ -5,8 +5,6 @@
 import {
   cwd,
   deleteEnv,
-  IS_BUN,
-  IS_DENO,
   join,
   mkdir,
   remove,
@@ -495,20 +493,16 @@ describe("ConfigManager", () => {
       const envDir = join(testDir, "env-vars");
       await mkdir(envDir, { recursive: true });
 
-      // 使用 runtime-adapter 的 getEnv 来设置和获取环境变量
+      // 使用 runtime-adapter 的 getEnv/setEnv/deleteEnv 跨运行时操作环境变量
+      // 【Why】原实现用 IS_DENO/IS_BUN 手动 globalThis 分支，缺 Node 分支——
+      //        Node 下 TEST_BASE_URL 不会被设置，BASE_URL=${TEST_BASE_URL} 不展开
+      //        致 expect(config.BASE_URL).toBe(...) 断言失败。setEnv/deleteEnv 已在
+      //        文件顶部导入且三端统一（runtime-adapter v1.2.2 支持 Node），直接复用。
       const { getEnv } = await import("@dreamer/runtime-adapter");
 
       // 设置环境变量用于引用
       const originalEnv = getEnv("TEST_BASE_URL");
-      if (IS_DENO) {
-        (globalThis as any).Deno.env.set(
-          "TEST_BASE_URL",
-          "https://api.example.com",
-        );
-      } else if (IS_BUN) {
-        (globalThis as any).process.env.TEST_BASE_URL =
-          "https://api.example.com";
-      }
+      setEnv("TEST_BASE_URL", "https://api.example.com");
 
       try {
         await writeTextFile(
@@ -530,18 +524,10 @@ describe("ConfigManager", () => {
         expect(config.API_URL).toBeTruthy();
       } finally {
         // 恢复原始环境变量
-        if (IS_DENO) {
-          if (originalEnv) {
-            (globalThis as any).Deno.env.set("TEST_BASE_URL", originalEnv);
-          } else {
-            (globalThis as any).Deno.env.delete("TEST_BASE_URL");
-          }
-        } else if (IS_BUN) {
-          if (originalEnv) {
-            (globalThis as any).process.env.TEST_BASE_URL = originalEnv;
-          } else {
-            delete (globalThis as any).process.env.TEST_BASE_URL;
-          }
+        if (originalEnv) {
+          setEnv("TEST_BASE_URL", originalEnv);
+        } else {
+          deleteEnv("TEST_BASE_URL");
         }
       }
     }, {

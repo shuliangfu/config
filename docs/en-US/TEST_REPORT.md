@@ -4,12 +4,12 @@
 
 ## 📊 Test overview
 
-| Item                | Value                                               |
-| ------------------- | --------------------------------------------------- |
-| **Package version** | `@dreamer/config@1.0.2`                             |
-| **Command**         | From package root: `deno test -A tests/mod.test.ts` |
-| **Environment**     | Deno 2.5+ (`nodeModulesDir: auto` in `deno.json`)   |
-| **Test framework**  | `@dreamer/test`                                     |
+| Item                | Value                                                                  |
+| ------------------- | --------------------------------------------------------------------- |
+| **Package version** | `@dreamer/config@1.1.0`                                               |
+| **Command**         | Deno: `deno test -A tests/` · Bun: `bun test tests/` · Node: `npm run test:node` |
+| **Environment**     | Deno 2.9+ / Bun 1.3+ / Node.js 22+                                    |
+| **Test framework**  | `@dreamer/test@^1.2.3`                                                |
 
 ---
 
@@ -17,13 +17,16 @@
 
 ### Overall statistics
 
-| Metric             | Value                                          |
-| ------------------ | ---------------------------------------------- |
-| **Total tests**    | 54                                             |
-| **Passed**         | 54                                             |
-| **Failed**         | 0                                              |
-| **Pass rate**      | 100%                                           |
-| **Execution time** | On the order of tens of ms (machine-dependent) |
+| Metric          | Value                                |
+| --------------- | ------------------------------------ |
+| **Total tests** | 54 (Deno) / 52 (Bun) / 52 (Node)     |
+| **Passed**      | 54 / 52 / 52                         |
+| **Failed**      | 0 / 0 / 0                            |
+| **Pass rate**   | 100%                                 |
+
+> The Deno test runner counts 2 framework teardown steps in the total, so Deno
+> reports 54 while Bun/Node report 52; the business `it()` cases are identical
+> across runtimes, all with 0 failures.
 
 ### Test file statistics
 
@@ -196,11 +199,12 @@ cleanup), which matches a normal `deno test -A tests/mod.test.ts` run.
 
 ## 📝 Conclusion
 
-All **`deno test` totals (54)** for `@dreamer/config` pass — **52** business
-`it()` cases are listed in the sections above, plus **2** framework teardown
-steps. Coverage includes async/sync loading, layered `.env`, optional process
-preload, get/set/merge, hot reload, and `@dreamer/service` integration.
-Assertions and edge cases are defined in `tests/mod.test.ts`.
+All three runtimes (Deno/Bun/Node) pass for `@dreamer/config`: **54 / 52 / 52,
+0 failures** (Deno reports 2 more than Bun/Node due to framework teardown
+steps; the business `it()` cases are identical at 52). Coverage includes
+async/sync loading, layered `.env`, optional process preload, get/set/merge,
+hot reload, and `@dreamer/service` integration. Assertions and edge cases are
+defined in `tests/mod.test.ts`.
 
 ---
 
@@ -208,6 +212,6 @@ Assertions and edge cases are defined in `tests/mod.test.ts`.
 
 **Pass rate: 100%** ✅
 
-_54 tests | All passed_
+_54 / 52 / 52 tests (Deno/Bun/Node) | All passed_
 
 </div>
