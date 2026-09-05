@@ -190,7 +190,7 @@ export function resolveConfigEnvFileSuffix(raw: string): ConfigEnvFileSuffix {
 
 /**
  * 同步合并单个目录下的多份 `.env` 层；后者覆盖前者。
- * 顺序：`.env` → `.env.{dev|test|prod}`（见 {@link resolveConfigEnvFileSuffix}）→ 若原始环境名（小写）与三档后缀不同，再尝试 `.env.{原始}`（如 `.env.development`）。
+ * 顺序：`.env` → `.env.local`（非测试环境）→ `.env.{dev|test|prod}`（见 {@link resolveConfigEnvFileSuffix}）→ 若原始环境名（小写）与三档后缀不同，再尝试 `.env.{原始}`（如 `.env.development`）→ `.env.{dev|test|prod}.local` / `.env.{原始}.local`（非测试环境）。
  *
  * @param directory 配置目录（相对或绝对路径，可省略末尾 `/`）
  * @param envRaw 与 `ConfigManager` 的 `env` 选项语义一致的环境名字符串
@@ -205,6 +205,16 @@ export function collectDotEnvLayersSync(
     ...loadEnvFileSync(`${dir}/.env`),
   };
   const suffix = resolveConfigEnvFileSuffix(envRaw);
+  const isTest = suffix === "test";
+
+  // .env.local: 本地通用覆盖（测试模式下跳过以保证测试一致性）
+  if (!isTest) {
+    merged = {
+      ...merged,
+      ...loadEnvFileSync(`${dir}/.env.local`),
+    };
+  }
+
   merged = {
     ...merged,
     ...loadEnvFileSync(`${dir}/.env.${suffix}`),
@@ -216,6 +226,21 @@ export function collectDotEnvLayersSync(
       ...loadEnvFileSync(`${dir}/.env.${exact}`),
     };
   }
+
+  // 环境特定的 .local 覆盖
+  if (!isTest) {
+    merged = {
+      ...merged,
+      ...loadEnvFileSync(`${dir}/.env.${suffix}.local`),
+    };
+    if (exact && exact !== suffix) {
+      merged = {
+        ...merged,
+        ...loadEnvFileSync(`${dir}/.env.${exact}.local`),
+      };
+    }
+  }
+
   return merged;
 }
 
@@ -235,6 +260,15 @@ async function collectDotEnvLayersAsync(
     ...(await loadEnvFile(`${dir}/.env`)),
   };
   const suffix = resolveConfigEnvFileSuffix(envRaw);
+  const isTest = suffix === "test";
+
+  if (!isTest) {
+    merged = {
+      ...merged,
+      ...(await loadEnvFile(`${dir}/.env.local`)),
+    };
+  }
+
   merged = {
     ...merged,
     ...(await loadEnvFile(`${dir}/.env.${suffix}`)),
@@ -246,6 +280,20 @@ async function collectDotEnvLayersAsync(
       ...(await loadEnvFile(`${dir}/.env.${exact}`)),
     };
   }
+
+  if (!isTest) {
+    merged = {
+      ...merged,
+      ...(await loadEnvFile(`${dir}/.env.${suffix}.local`)),
+    };
+    if (exact && exact !== suffix) {
+      merged = {
+        ...merged,
+        ...(await loadEnvFile(`${dir}/.env.${exact}.local`)),
+      };
+    }
+  }
+
   return merged;
 }
 

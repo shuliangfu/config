@@ -10,6 +10,16 @@ and this project adheres to
 
 ---
 
+## [1.1.1] - 2026-09-05
+
+### Added
+
+- Support `.env.local` and `.env.[mode].local` layered configuration loading in
+  `collectDotEnvLayersSync` and `collectDotEnvLayersAsync` (automatically
+  skipped in test mode).
+
+---
+
 ## [1.1.0] - 2026-07-23
 
 ### Added
@@ -26,18 +36,19 @@ and this project adheres to
 ### Changed
 
 - **src/client/mod.ts**: `pollTimer` type changed from `number | null` to
-  `ReturnType<typeof setInterval> | null` (Deno/Bun return `number`, Node returns
-  `NodeJS.Timeout` — unified cross-runtime type).
+  `ReturnType<typeof setInterval> | null` (Deno/Bun return `number`, Node
+  returns `NodeJS.Timeout` — unified cross-runtime type).
 - **tests/mod.test.ts**: Environment-variable setup in the variable-reference
   test replaced `IS_DENO`/`IS_BUN` manual `globalThis` branching with
   runtime-adapter's `setEnv`/`deleteEnv` (the original lacked a Node branch — on
   Node, `TEST_BASE_URL` was never set, so `${TEST_BASE_URL}` in `.env` did not
   expand and the assertion failed).
-- **Dependencies**: `@dreamer/service` ^1.1.0, `@dreamer/runtime-adapter` ^1.2.2,
-  `@dreamer/test` ^1.2.3.
+- **Dependencies**: `@dreamer/service` ^1.1.0, `@dreamer/runtime-adapter`
+  ^1.2.2, `@dreamer/test` ^1.2.3.
 - **CI**: Deno bumped to v2.9; publish.yml changed to tags-only trigger
   (previously main-branch push also triggered).
-- **Publish**: `jsr publish` no longer uses `--no-check` (stricter release gate).
+- **Publish**: `jsr publish` no longer uses `--no-check` (stricter release
+  gate).
 
 ### Compatibility
 

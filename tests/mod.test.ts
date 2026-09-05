@@ -903,15 +903,38 @@ describe("ConfigManager", () => {
       expect(resolveConfigEnvFileSuffix("test")).toBe("test");
     });
 
-    it("collectDotEnvLayersSync 应按 .env、.env.dev、.env.development 顺序覆盖", async () => {
-      const dir = join(testDir, "collect-dotenv-sync");
+    it("collectDotEnvLayersSync 应按 .env、.env.local、.env.dev、.env.development、.env.dev.local 顺序覆盖", async () => {
+      const dir = join(testDir, "collect-dotenv-sync-local");
       await mkdir(dir, { recursive: true });
-      await writeTextFile(join(dir, ".env"), "X=1\n");
+      await writeTextFile(join(dir, ".env"), "X=1\nZ=base\nW=base\n");
+      await writeTextFile(join(dir, ".env.local"), "Z=local-override\n");
       await writeTextFile(join(dir, ".env.dev"), "X=2\nY=a\n");
       await writeTextFile(join(dir, ".env.development"), "Y=b\n");
+      await writeTextFile(
+        join(dir, ".env.dev.local"),
+        "W=dev-local-override\n",
+      );
       const layers = collectDotEnvLayersSync(dir, "development");
       expect(layers.X).toBe("2");
       expect(layers.Y).toBe("b");
+      expect(layers.Z).toBe("local-override");
+      expect(layers.W).toBe("dev-local-override");
+      await remove(dir, { recursive: true }).catch(() => {});
+    });
+
+    it("collectDotEnvLayersSync 应在 test 环境下忽略 .env.local 与 .env.test.local", async () => {
+      const dir = join(testDir, "collect-dotenv-sync-test");
+      await mkdir(dir, { recursive: true });
+      await writeTextFile(join(dir, ".env"), "X=1\nZ=base\n");
+      await writeTextFile(join(dir, ".env.local"), "Z=local-override\n");
+      await writeTextFile(join(dir, ".env.test"), "X=test-val\n");
+      await writeTextFile(
+        join(dir, ".env.test.local"),
+        "X=test-local-override\n",
+      );
+      const layers = collectDotEnvLayersSync(dir, "test");
+      expect(layers.X).toBe("test-val");
+      expect(layers.Z).toBe("base");
       await remove(dir, { recursive: true }).catch(() => {});
     });
 
